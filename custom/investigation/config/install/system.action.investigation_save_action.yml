@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - investigation
+id: investigation_save_action
+label: 'Save investigations'
+type: investigation
+plugin: entity:save_action:investigation
+configuration: {  }
