@@ -105,7 +105,7 @@ final class PostProcessResource extends ResourceBase {
    */
   public function post(array $data): ModifiedResourceResponse {
     // Check user permissions.
-    if (!$this->currentUser()->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 

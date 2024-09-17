@@ -25,7 +25,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  *   id = "get_process_resource",
  *   label = @Translation("Get Process"),
  *   uri_paths = {
- *     "canonical" = "/rest/get-process-resource/{processId}",
+ *     "canonical" = "/rest/process/{processId}",
  *   }
  * )
  *

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\investigation\Plugin\rest\resource;
+namespace Drupal\investigation_documents\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -13,19 +13,19 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\investigation\Entity\Investigation;
-use Drupal\investigation\Services\InvestigationService\InvestigationService;
-
+use Drupal\investigation_documents\Entity\InvestigationDocuments;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 /**
- * Represents Post Investigation records as resources.
+ * Represents Delete Investigation Document records as resources.
  *
  * @RestResource (
- *   id = "post_investigation_resource",
- *   label = @Translation("Post Investigation"),
+ *   id = "delete_investigation_document",
+ *   label = @Translation("Delete Investigation Document"),
  *   uri_paths = {
- *     "canonical" = "/api/post-investigation-resource",
- *     "create" = "/api/post-investigation-resource"
+ *     "canonical" = "/api/delete-investigation-document/{fileId}",
+ *     "patch" = "/api/delete-investigation-document/{fileId}"
  *   }
  * )
  *
@@ -51,7 +51,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class PostInvestigationResource extends ResourceBase {
+final class DeleteInvestigationDocument extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -68,13 +68,13 @@ final class PostInvestigationResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
-    AccountProxyInterface $currentUser,
-    InvestigationService $investigation_service
+    AccountProxyInterface    $currentUser,
+    EntityTypeManagerInterface $entityTypeManager
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('post_investigation_resource');
+    $this->storage = $keyValueFactory->get('delete_investigation_document');
     $this->currentUser = $currentUser;
-    $this->investigationService = $investigation_service;
+    $this->entityTypeManager = $entityTypeManager;
   }
 
   /**
@@ -89,39 +89,36 @@ final class PostInvestigationResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('investigation.service')
+      $container->get('entity_type.manager')
     );
   }
 
+ 
+
   /**
-   * Responds to POST requests and saves the new record.
-   *
-   * @param array $data
-   *   The data to create the new investigation entity.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response containing the created entity.
+   * Responds to PATCH requests.
    */
-  public function post(array $data): ModifiedResourceResponse {
-    // Check user permissions.
+  public function patch($fileId): ModifiedResourceResponse {
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
-    }
+        }
+        $investigationDocument = InvestigationDocuments::load($fileId);
 
-    try {
-      // Create the new investigation entity.
-      $entity = $this->investigationService->createInvestigation($data);
-
-      // Return a response with status code 201 Created.
-      return new ModifiedResourceResponse($entity, 201);
+    if (!$investigationDocument) {
+      throw new NotFoundHttpException();
     }
-    catch (\Exception $e) {
-      // Log the error message.
-      $this->logger->error('An error occurred while creating Investigation entity: @message', ['@message' => $e->getMessage()]);
+    $label = $investigationDocument -> getLabel();
+    $newLabel = "$label - Archived";
+    $investigationDocument->setLabel($newLabel);
+    $investigationDocument->setVisible(false);
+    $entity=$investigationDocument->save();
 
-      // Throw a generic HTTP exception for internal server errors.
-      throw new HttpException(500, 'Internal Server Error');
-    }
+    $this->logger->notice('The Investigation Document @id has been moved to archived.', ['@id' => $fileId]);
+
+    return new ModifiedResourceResponse($entity, 200);
+
   }
+
+
 
 }

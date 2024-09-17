@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\investigation\Entity\Investigation;
+use Drupal\investigation\Services\InvestigationService\InvestigationService;
 
 /**
  * Represents Patch Investigation records as resources.
@@ -21,8 +24,8 @@ use Symfony\Component\Routing\Route;
  *   id = "patch_investigation_resource",
  *   label = @Translation("Patch Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/patch-investigation-resource/{id}",
- *     "create" = "/api/patch-investigation-resource"
+ *     "canonical" = "/api/patch-investigation-resource/{investigationId}",
+ *     "patch" = "/api/patch-investigation-resource/{investigationId}"
  *   }
  * )
  *
@@ -65,9 +68,13 @@ final class PatchInvestigationResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    InvestigationService $investigation_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('patch_investigation_resource');
+    $this->currentUser = $currentUser;
+    $this->investigationService = $investigation_service;
   }
 
   /**
@@ -80,77 +87,47 @@ final class PatchInvestigationResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('investigation.service')
     );
   }
 
   /**
-   * Responds to POST requests and saves the new record.
-   */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new patch investigation record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
-  /**
-   * Responds to GET requests.
-   */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
-
-  /**
    * Responds to PATCH requests.
+   *
+   * @param int $investigationId
+   *   The ID of the investigation entity to update.
+   * @param array $data
+   *   The data to update the investigation entity with.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The modified resource response.
+   * 
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   *   Thrown when an error occurs during the update.
    */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+  public function patch($investigationId, array $data): ModifiedResourceResponse {
+
+    // Use current user after pass authentication to validate access.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
     }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The patch investigation record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
+
+    try {
+      // Attempt to update the investigation entity.
+      $entity = $this->investigationService->updateInvestigation($investigationId,$data);
+      $this->logger->notice('The Investigation @id has been updated.', ['@id' => $investigationId]);
+      
+      // Return a response with status code 200 OK.
+      return new ModifiedResourceResponse($entity, 200);
+    } 
+    catch (\Exception $e) {
+      // Handle any other exceptions that occur during the update.
+      $this->logger->error('An error occurred while updating Investigation: @message', ['@message' => $e->getMessage()]);
+      throw new HttpException(500, 'Internal Server Error');
+    }
   }
 
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $this->storage->delete($id);
-    $this->logger->notice('The patch investigation record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
 
 }

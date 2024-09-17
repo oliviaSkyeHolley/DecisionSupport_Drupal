@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\investigation\Entity\Investigation;
+use Drupal\investigation\Services\InvestigationService\InvestigationService;
 
 /**
  * Represents Delete Investigation records as resources.
@@ -21,8 +24,8 @@ use Symfony\Component\Routing\Route;
  *   id = "delete_investigation_resource",
  *   label = @Translation("Delete Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-investigation-resource/{id}",
- *     "create" = "/api/delete-investigation-resource"
+ *     "canonical" = "/api/delete-investigation-resource/{investigationId}",
+ *     "delete" = "/api/delete-investigation-resource/{investigationId}"
  *   }
  * )
  *
@@ -65,9 +68,13 @@ final class DeleteInvestigationResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    InvestigationService $investigation_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('delete_investigation_resource');
+    $this->currentUser = $currentUser;
+    $this->investigationService = $investigation_service;
   }
 
   /**
@@ -80,77 +87,43 @@ final class DeleteInvestigationResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('investigation.service')
     );
   }
 
-  /**
-   * Responds to POST requests and saves the new record.
-   */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new delete investigation record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
-  /**
-   * Responds to GET requests.
-   */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
-
-  /**
-   * Responds to PATCH requests.
-   */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The delete investigation record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
-
-  /**
+   /**
    * Responds to DELETE requests.
+   *
+   * @param string $investigationId
+   *   The ID of the Investigation entity to delete.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The HTTP response object.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   *   Thrown when the specified entity does not exist.
    */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $this->storage->delete($id);
-    $this->logger->notice('The delete investigation record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
+  public function delete($investigationId): ModifiedResourceResponse {
+    // Check user permission
+    if (!$this->currentUser->hasPermission('access content')) {
+       throw new AccessDeniedHttpException();
+     }
+ 
+     try {
+        // Delete the investigation entity.
+       $this->investigationBuilderService->deleteInvestigation($investigationId);
+       return new ModifiedResourceResponse(NULL, 204);
+     } 
+     catch (\Exception $e) {
+      // Log the error message.
+       $this->logger->error('An error occurred while deleting Investigation entity with ID @id: @message', ['@id' => $investigationId, '@message' => $e->getMessage(),]);
+       throw new HttpException(500, 'Internal Server Error');
+     }
+     return new ModifiedResourceResponse(NULL, 204);
+   }
+ 
+  
 
 }

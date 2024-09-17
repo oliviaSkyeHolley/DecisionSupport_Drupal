@@ -7,7 +7,7 @@ namespace Drupal\process\Services\ProcessService;
 use Drupal\process\Entity\Process;
 
 /**
- * @todo Add interface description.
+ * Interface for process service.
  */
 interface ProcessServiceInterface {
 

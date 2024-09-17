@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\investigation\Entity\Investigation;
+use Drupal\investigation\Services\InvestigationService\InvestigationService;
 
 /**
  * Represents Get Investigation List records as resources.
@@ -21,8 +24,7 @@ use Symfony\Component\Routing\Route;
  *   id = "get_investigation_list_resource",
  *   label = @Translation("Get Investigation List"),
  *   uri_paths = {
- *     "canonical" = "/api/get-investigation-list-resource/{id}",
- *     "create" = "/api/get-investigation-list-resource"
+ *     "canonical" = "/rest/get-investigation-list-resource",
  *   }
  * )
  *
@@ -65,9 +67,13 @@ final class GetInvestigationListResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    InvestigationService $investigation_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_investigation_list_resource');
+    $this->currentUser = $currentUser;
+    $this->investigationService = $investigation_service;
   }
 
   /**
@@ -80,77 +86,38 @@ final class GetInvestigationListResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('investigation.service')
     );
   }
-
-  /**
-   * Responds to POST requests and saves the new record.
-   */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new get investigation list record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
   /**
    * Responds to GET requests.
+   *
+   * @return \Drupal\rest\ResourceResponse
+   *   The HTTP response object.
    */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+  public function get() {
+    // Check user permissions.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
     }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
 
-  /**
-   * Responds to PATCH requests.
-   */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+    try {
+      // Retrieve the list of investigations.
+      $investigationList = $this->investigationService->getInvestigationList();
+      $response = new ResourceResponse($investigationList);
+      $response->addCacheableDependency($this->currentUser);
+
+      return $response;
     }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The get investigation list record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while loading Investigation list: @message', ['@message' => $e->getMessage()]);
 
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
     }
-    $this->storage->delete($id);
-    $this->logger->notice('The get investigation list record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
   }
 
 }

@@ -177,9 +177,11 @@ final class ProcessService implements ProcessServiceInterface {
     $label = $process -> getLabel();
     $newLabel = "$label - Archived";
     $process->setLabel($newLabel);
+    $entity=$process->save();
 
     $this->logger->notice('Moved Process with ID @id to archived.', ['@id' => $processId]);
 
+    return $entity;
   }
 
 

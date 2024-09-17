@@ -101,7 +101,7 @@ final class GetProcessListResource extends ResourceBase {
    */
   public function get() {
     // Check user permissions.
-    if (!$this->currentUser()->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
@@ -109,7 +109,7 @@ final class GetProcessListResource extends ResourceBase {
       // Retrieve the list of processes.
       $processList = $this->processService->getProcessList();
       $response = new ResourceResponse($processList);
-      $response->addCacheableDependency($this->currentUser());
+      $response->addCacheableDependency($this->currentUser);
 
       return $response;
     }
