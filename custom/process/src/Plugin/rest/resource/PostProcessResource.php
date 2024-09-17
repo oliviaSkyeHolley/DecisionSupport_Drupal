@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\process\Entity\Process;
+use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
  * Represents post_process records as resources.
@@ -21,7 +24,7 @@ use Symfony\Component\Routing\Route;
  *   id = "post_process_resource",
  *   label = @Translation("Post Process"),
  *   uri_paths = {
- *     "canonical" = "/api/post-process-resource/{id}",
+ *     "canonical" = "/api/post-process-resource",
  *     "create" = "/api/post-process-resource"
  *   }
  * )
@@ -65,9 +68,14 @@ final class PostProcessResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    ProcessService $process_service
+
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('post_process_resource');
+    $this->currentUser = $currentUser;
+    $this->processService = $process_service;
   }
 
   /**
@@ -80,77 +88,42 @@ final class PostProcessResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('process.service')
     );
   }
 
   /**
    * Responds to POST requests and saves the new record.
+   *
+   * @param array $data
+   *   The data to create the new process entity.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The response containing the created entity.
    */
   public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new post_process record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
-  /**
-   * Responds to GET requests.
-   */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+    // Check user permissions.
+    if (!$this->currentUser()->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
     }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
 
-  /**
-   * Responds to PATCH requests.
-   */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+    try {
+      // Create the new process entity.
+      $entity = $this->processService->createProcess($data);
+
+      // Return a response with status code 201 Created.
+      return new ModifiedResourceResponse($entity, 201);
     }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The post_process record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while creating Process entity: @message', ['@message' => $e->getMessage()]);
 
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
     }
-    $this->storage->delete($id);
-    $this->logger->notice('The post_process record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
 
 }

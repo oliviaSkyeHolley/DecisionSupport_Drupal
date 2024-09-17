@@ -18,13 +18,14 @@ use Drupal\process\Entity\Process;
 use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
- * Represents Get Process List records as resources.
+ * Represents Duplicate Process records as resources.
  *
  * @RestResource (
- *   id = "get_process_list_resource",
- *   label = @Translation("Get Process List"),
+ *   id = "duplicate_process_resource",
+ *   label = @Translation("Duplicate Process"),
  *   uri_paths = {
- *     "canonical" = "/rest/process/list",
+ *     "canonical" = "/api/duplicate-process-resource/{processId}",
+ *     "create" = "/api/duplicate-process-resource/{processId}"
  *   }
  * )
  *
@@ -50,7 +51,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class GetProcessListResource extends ResourceBase {
+final class DuplicateProcessResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -71,7 +72,7 @@ final class GetProcessListResource extends ResourceBase {
     ProcessService $process_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('get_process_list_resource');
+    $this->storage = $keyValueFactory->get('duplicate_process_resource');
     $this->currentUser = $currentUser;
     $this->processService = $process_service;
   }
@@ -92,35 +93,34 @@ final class GetProcessListResource extends ResourceBase {
     );
   }
 
- 
+
   /**
-   * Responds to GET requests.
+   * Responds to POST requests and saves the new record.
    *
-   * @return \Drupal\rest\ResourceResponse
-   *   The HTTP response object.
+   * @param array $data
+   *   The data to create the new duplicated process entity.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The response containing the created entity.
    */
-  public function get() {
+  public function post(array $data): ModifiedResourceResponse {
     // Check user permissions.
-    if (!$this->currentUser()->hasPermission('access content')) {
+    if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
     try {
-      // Retrieve the list of processes.
-      $processList = $this->processService->getProcessList();
-      $response = new ResourceResponse($processList);
-      $response->addCacheableDependency($this->currentUser());
+      // Create the duplicate process entity.
+      $entity = $this->processService->duplicateProcess($data);
 
-      return $response;
-    }
+      // Return a response with status code 201 Created.
+      return new ModifiedResourceResponse($entity, 201);
+    } 
     catch (\Exception $e) {
-      // Log the error message.
-      $this->logger->error('An error occurred while loading Process list: @message', ['@message' => $e->getMessage()]);
-
-      // Throw a generic HTTP exception for internal server errors.
+      // Handle any exceptions that occur during entity creation.
+      $this->logger->error('An error occurred while duplicating Process entity: @message', ['@message' => $e->getMessage()]);
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-
 
 }

@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\process\Entity\Process;
+use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
  * Represents Patch Process records as resources.
@@ -21,8 +24,9 @@ use Symfony\Component\Routing\Route;
  *   id = "patch_process_resource",
  *   label = @Translation("Patch Process"),
  *   uri_paths = {
- *     "canonical" = "/api/patch-process-resource/{id}",
- *     "create" = "/api/patch-process-resource"
+ *     "canonical" = "/api/patch-process-resource/{processId}",
+ *      "patch" = "/api/patch-process-resource/{processId}"
+ *     
  *   }
  * )
  *
@@ -65,9 +69,13 @@ final class PatchProcessResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    ProcessService $process_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('patch_process_resource');
+    $this->currentUser = $currentUser;
+    $this->processService = $process_service;
   }
 
   /**
@@ -80,77 +88,48 @@ final class PatchProcessResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('process.service')
     );
   }
 
-  /**
-   * Responds to POST requests and saves the new record.
-   */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new patch process record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
-  /**
-   * Responds to GET requests.
-   */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
 
   /**
    * Responds to PATCH requests.
+   *
+   * @param int $processId
+   *   The ID of the process entity to update.
+   * @param array $data
+   *   The data to update the process entity with.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The modified resource response.
+   * 
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   *   Thrown when an error occurs during the update.
    */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The patch process record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
+  public function patch($processId, array $data): ModifiedResourceResponse {
 
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+    // Use current user after pass authentication to validate access.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
     }
-    $this->storage->delete($id);
-    $this->logger->notice('The patch process record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
+    try {
+      // Attempt to update the process entity.
+      $entity = $this->processService->patchProcess($processId,$data);
+      $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
+      
+      // Return a response with status code 200 OK.
+      return new ModifiedResourceResponse($entity, 200);
+    } 
+    catch (\Exception $e) {
+      // Handle any other exceptions that occur during the update.
+      $this->logger->error('An error occurred while updating Process: @message', ['@message' => $e->getMessage()]);
+      throw new HttpException(500, 'Internal Server Error');
     }
-    return $route;
   }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
+  
 
 }

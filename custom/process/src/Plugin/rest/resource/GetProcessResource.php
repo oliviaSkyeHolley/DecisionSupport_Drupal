@@ -99,15 +99,25 @@ final class GetProcessResource extends ResourceBase {
    */
   public function get($processId): JsonResponse
   {
-
+    // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
-    $process = Process::load($processId);
-    $returnValue = $process->getJsonString();
+    try {
+      // Retrieve the process data.
+      $processJsonString = $this->processService->getProcess($processId);
 
-    return new JsonResponse($returnValue, 200, [], true);
+      // Return the JSON response.
+      return new JsonResponse($processJsonString, 200, [], true);
+    }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while loading Process: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
+    }
   }
 
 }

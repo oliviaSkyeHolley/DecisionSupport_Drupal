@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\process\Entity\Process;
+use Drupal\process\Services\ProcessService\ProcessService;
 
 /**
  * Represents Delete Process records as resources.
@@ -21,8 +24,8 @@ use Symfony\Component\Routing\Route;
  *   id = "delete_process_resource",
  *   label = @Translation("Delete Process"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-process-resource/{id}",
- *     "create" = "/api/delete-process-resource"
+ *     "canonical" = "/api/delete-process-resource/{processId}",
+ *     "patch" = "/api/delete-process-resource/{processId}"
  *   }
  * )
  *
@@ -65,9 +68,13 @@ final class DeleteProcessResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    ProcessService $process_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('delete_process_resource');
+    $this->currentUser = $currentUser;
+    $this->processService = $process_service;
   }
 
   /**
@@ -80,77 +87,43 @@ final class DeleteProcessResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('process.service')
     );
   }
 
-  /**
-   * Responds to POST requests and saves the new record.
+ /**
+   * Responds to Patch requests.
+   *
+   * @param string $processId
+   *   The ID of the process entity to be archived.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The HTTP response object.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   *   Thrown when an error occurs during the process.
    */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new delete process record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
-
-  /**
-   * Responds to GET requests.
-   */
-  public function get($id): ResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
+  public function patch($processId): ModifiedResourceResponse {
+    // Check user permissions.
+    if (!$this->currentUser->hasPermission('access content')) {
+       throw new AccessDeniedHttpException();
+     }
+ 
+     try {
+      // Attempt to update the process entity.
+      $entity = $this->processService->deleteProcess($processId);
+      $this->logger->notice('The Process @id has been moved to Archived.', ['@id' => $processId]);
+      
+      // Return a response with status code 200 OK.
+      return new ModifiedResourceResponse($entity, 200);
+    } 
+    catch (\Exception $e) {
+      // Handle any other exceptions that occur during moving entity to archived.
+      $this->logger->error('An error occurred while moving Process to archived: @message', ['@message' => $e->getMessage()]);
+      throw new HttpException(500, 'Internal Server Error');
     }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
-
-  /**
-   * Responds to PATCH requests.
-   */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The delete process record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
-
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $this->storage->delete($id);
-    $this->logger->notice('The delete process record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
-  private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
+   }
 
 }

@@ -66,6 +66,17 @@ final class ProcessService implements ProcessServiceInterface {
   /**
    * {@inheritdoc}
    */
+  public function getProcess($processId) {
+
+    $process = Process::load($processId);
+    $processJsonString = $process->getJsonString();
+
+    return $processJsonString;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function createProcess(array $data) {
 
     $process = Process::create($data);
@@ -117,7 +128,7 @@ final class ProcessService implements ProcessServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function updateProcess($processId, array $data)
+  public function patchProcess($processId, array $data)
   {
     $process = Process::load($processId);
 
@@ -127,6 +138,25 @@ final class ProcessService implements ProcessServiceInterface {
 
     $process->setName($data['label']);
     $process->setRevisionStatus($data['revision_status']);
+    $entity=$process->save();
+
+    $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
+
+    return $entity;
+  }
+
+    /**
+   * {@inheritdoc}
+   */
+  public function updateProcess($processId, array $data)
+  {
+    $process = Process::load($processId);
+
+    if (!$process) {
+      throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
+    }
+
+    $process->setJsonString($data['json_string']);
     $entity=$process->save();
 
     $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
