@@ -1,0 +1,11 @@
+name: 'Investigation'
+type: module
+description: 'Investigation Class for Investigation'
+package: 'CS321'
+core_version_requirement: ^10
+config_devel:
+  - rest.resource.get_investigation
+  - rest.resource.get_investigation_list
+  - rest.resource.post_investigation
+  - rest.resource.patch_investigation
+  - rest.resource.delete_investigation

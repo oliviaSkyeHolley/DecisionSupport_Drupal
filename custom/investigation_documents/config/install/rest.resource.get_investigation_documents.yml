@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - investigation_documents
+    - serialization
+    - simple_oauth
+    - user
+id: get_investigation_documents
+plugin_id: get_investigation_documents
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - oauth2
+    - cookie

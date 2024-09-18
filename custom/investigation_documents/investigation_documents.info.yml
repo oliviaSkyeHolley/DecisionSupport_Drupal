@@ -1,0 +1,10 @@
+name: 'Investigation Document'
+type: module
+description: 'Handles files uploaded during investigations.'
+package: 'CS321'
+core_version_requirement: ^10
+config_devel:
+  - rest.resource.get_investigation_documents
+  - rest.resource.post_investigation_document
+  - rest.resource.delete_investigation_document
+  - rest.resource.file.upload

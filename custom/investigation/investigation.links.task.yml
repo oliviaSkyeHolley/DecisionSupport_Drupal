@@ -1,0 +1,22 @@
+entity.investigation.settings:
+  title: 'Settings'
+  route_name: entity.investigation.settings
+  base_route: entity.investigation.settings
+entity.investigation.view:
+  title: 'View'
+  route_name: entity.investigation.canonical
+  base_route: entity.investigation.canonical
+entity.investigation.edit_form:
+  title: 'Edit'
+  route_name: entity.investigation.edit_form
+  base_route: entity.investigation.canonical
+entity.investigation.delete_form:
+  title: 'Delete'
+  route_name: entity.investigation.delete_form
+  base_route: entity.investigation.canonical
+  weight: 10
+entity.investigation.collection:
+  title: 'Investigations'
+  route_name: entity.investigation.collection
+  base_route: system.admin_content
+  weight: 10
