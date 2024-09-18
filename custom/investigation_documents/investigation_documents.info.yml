@@ -1,4 +1,4 @@
-name: 'Investigation Documents'
+name: 'Investigation Document'
 type: module
 description: 'Handles files uploaded during investigations.'
 package: 'CS321'

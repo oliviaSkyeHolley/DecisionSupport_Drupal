@@ -18,15 +18,15 @@ use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\investigation_documents\Entity\InvestigationDocuments;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\investigation_documents\Services\InvestigationDocumentsService\InvestigationDocumentsService;
+
 /**
- * Represents Delete Investigation Document records as resources.
+ * Represents Get Investigation Documents records as resources.
  *
  * @RestResource (
- *   id = "delete_investigation_document",
- *   label = @Translation("Delete Investigation Document"),
+ *   id = "get_investigation_documents",
+ *   label = @Translation("Get Investigation Documents"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-investigation-document/{fileId}",
- *     "patch" = "/api/delete-investigation-document/{fileId}"
+ *     "canonical" = "/rest/investigation/document/get/{investigationId}",
  *   }
  * )
  *
@@ -52,12 +52,17 @@ use Drupal\investigation_documents\Services\InvestigationDocumentsService\Invest
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class DeleteInvestigationDocument extends ResourceBase {
+final class GetInvestigationDocuments extends ResourceBase {
 
-  /**
+   /**
    * The key-value storage.
    */
   private readonly KeyValueStoreInterface $storage;
+
+  /**
+   * The current user.
+   */
+  private AccountProxyInterface $currentUser;
 
   /**
    * {@inheritdoc}
@@ -73,10 +78,9 @@ final class DeleteInvestigationDocument extends ResourceBase {
     InvestigationDocumentsService $investigation_documents_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('delete_investigation_document');
+    $this->storage = $keyValueFactory->get('get_investigation_document');
     $this->currentUser = $currentUser;
     $this->investigationDocumentsService = $investigation_documents_service;
-    
   }
 
   /**
@@ -92,38 +96,34 @@ final class DeleteInvestigationDocument extends ResourceBase {
       $container->get('keyvalue'),
       $container->get('current_user'),
       $container->get('investigation_documents.service')
-
     );
   }
 
- 
-
   /**
-   * Responds to PATCH requests.
+   * Responds to GET requests.
    */
-  public function patch($fileId): ModifiedResourceResponse {
+  public function get($investigationId){
 
-        // Check user permissions.
-        if (!$this->currentUser->hasPermission('access content')) {
-          throw new AccessDeniedHttpException();
-        }
-    
-        try {
-         // Attempt to update the investigation document entity.
-         $entity = $this->investigationDocumentsService->deleteInvestigationDocument($fileId);
-         $this->logger->notice('The Investigation Document @id has been moved to Archived.', ['@id' => $fileId]);
-         
-         // Return a response with status code 200 OK.
-         return new ModifiedResourceResponse($entity, 200);
-       } 
-       catch (\Exception $e) {
-         // Handle any other exceptions that occur during moving entity to archived.
-         $this->logger->error('An error occurred while moving Investigation Document to archived: @message', ['@message' => $e->getMessage()]);
-         throw new HttpException(500, 'Internal Server Error');
-       }
+    // Check user permissions.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
 
+    try {
+      // Retrieve the list of processes.
+      $investigationDocuments = $this->investigationDocumentsService->getInvestigationDocuments($investigationId);
+      $response = new ResourceResponse($investigationDocuments);
+      $response->addCacheableDependency($this->currentUser);
+
+      return $response;
+    }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while loading Investigation Document list: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
+    }
+  }
   }
 
-
-
-}

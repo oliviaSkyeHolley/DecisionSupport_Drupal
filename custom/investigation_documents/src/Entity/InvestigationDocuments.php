@@ -66,99 +66,6 @@ final class InvestigationDocuments extends ContentEntityBase implements Investig
   use EntityChangedTrait;
   use EntityOwnerTrait;
 
-public function getLabel(): string {
-  return $this->get('label')->value;
-}
-
-public function setLabel(string $label): self {
-  $this->set('label', $label);
-  return $this;
-}
-
-public function getStatus(): bool {
-  return (bool) $this->get('status')->value;
-}
-
-public function setStatus(bool $status): self {
-  $this->set('status', $status);
-  return $this;
-}
-
-public function getNotes(): string {
-  return $this->get('notes')->value;
-}
-
-public function setNotes(string $notes): self {
-  $this->set('notes', $notes);
-  return $this;
-}
-
-public function getCreatedTime(): string {
-  return $this->get('created')->value;
-}
-
-public function getChangedTime(): string {
-  return $this->get('changed')->value;
-}
-
-public function getInvestigationId(): string {
-  return (int) $this->get('investigationId')->value;
-}
-
-public function setInvestigationId(int $investigationId): self {
-  $this->set('investigationId', $investigationId);
-  return $this;
-}
-
-public function getVisible(): bool {
-  return (bool) $this->get('visible')->value;
-}
-
-public function setVisible(bool $visible): self {
-  $this->set('visible', $visible);
-  return $this;
-}
-
-public function getStepId(): string {
-  return $this->get('stepId')->value;
-}
-
-public function setStepId(string $stepId): self {
-  $this->set('stepId', $stepId);
-  return $this;
-}
-
-
-  /**
-   * Get the file entity ID.
-   *
-   * @return int|null
-   *   The file entity ID or NULL if no file is associated.
-   */
-  public function getFileId(): ?int {
-    $file = $this->get('file')->entity;
-    return $file ? (int) $file->id() : null;
-  }
-
-  // public function getFile(){
-  //   $file = $this->get('file')->entity;
-  //   $url = file_create_url($file->getFileUrl());
-
-  //   return $url;
-  // }
-
-
-  /**
-   * {@inheritdoc}
-   */
-  public function preSave(EntityStorageInterface $storage): void {
-    parent::preSave($storage);
-    if (!$this->getOwnerId()) {
-      // If no owner has been set explicitly, make the anonymous user the owner.
-      $this->setOwnerId(0);
-    }
-  }
-
   /**
    * {@inheritdoc}
    */
@@ -310,5 +217,128 @@ public function setStepId(string $stepId): self {
 
     return $fields;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preSave(EntityStorageInterface $storage): void {
+    parent::preSave($storage);
+    if (!$this->getOwnerId()) {
+      // If no owner has been set explicitly, make the anonymous user the owner.
+      $this->setOwnerId(0);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getLabel(): string {
+    return $this->get('label')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setLabel(string $label): self {
+    $this->set('label', $label);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getStatus(): bool {
+    return (bool) $this->get('status')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setStatus(bool $status): self {
+    $this->set('status', $status);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getNotes(): string {
+    return $this->get('notes')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setNotes(string $notes): self {
+    $this->set('notes', $notes);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getCreatedTime(): string {
+    return $this->get('created')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getChangedTime(): string {
+    return $this->get('changed')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getInvestigationId(): string {
+    return (int) $this->get('investigationId')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setInvestigationId(int $investigationId): self {
+    $this->set('investigationId', $investigationId);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getVisible(): bool {
+    return (bool) $this->get('visible')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setVisible(bool $visible): self {
+    $this->set('visible', $visible);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function getStepId(): string {
+    return $this->get('stepId')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setStepId(string $stepId): self {
+    $this->set('stepId', $stepId);
+    return $this;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+    public function getFileId(): ?int {
+      $file = $this->get('file')->entity;
+      return $file ? (int) $file->id() : null;
+    }
 
 }

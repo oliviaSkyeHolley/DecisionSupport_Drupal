@@ -13,21 +13,20 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
-
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\investigation_documents\Entity\InvestigationDocuments;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
-
+use Drupal\investigation_documents\Services\InvestigationDocumentsService\InvestigationDocumentsService;
 /**
- * Represents Get Investigation Document List records as resources.
+ * Represents Post Investigation Document records as resources.
  *
  * @RestResource (
- *   id = "get_investigation_document_list_resource",
- *   label = @Translation("Get Investigation Document List"),
+ *   id = "post_investigation_document",
+ *   label = @Translation("Post Investigation Document"),
  *   uri_paths = {
- *     "canonical" = "/rest/investigation/document/get/{investigationId}",
- *     "create" = "/rest/investigation/document/get/"
+ *     "canonical" = "/rest/investigation/document/post",
+ *     "create" = "/rest/investigation/document/post"
  *   }
  * )
  *
@@ -53,17 +52,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class GetInvestigationDocumentListResource extends ResourceBase {
+final class PostInvestigationDocument extends ResourceBase {
 
   /**
    * The key-value storage.
    */
   private readonly KeyValueStoreInterface $storage;
-
-  /**
-   * The current user.
-   */
-  private AccountProxyInterface $currentUser;
 
   /**
    * {@inheritdoc}
@@ -76,12 +70,12 @@ final class GetInvestigationDocumentListResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface    $currentUser,
-    EntityTypeManagerInterface $entityTypeManager
+    InvestigationDocumentsService $investigation_documents_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('get_investigation_document_resource');
+    $this->storage = $keyValueFactory->get('post_investigation_document');
     $this->currentUser = $currentUser;
-     $this->entityTypeManager = $entityTypeManager;
+    $this->investigationDocumentsService = $investigation_documents_service;
   }
 
   /**
@@ -96,57 +90,38 @@ final class GetInvestigationDocumentListResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('entity_type.manager')
+      $container->get('investigation_documents.service')
     );
   }
-
-  /**
-   * Responds to GET requests.
+ /**
+   * Responds to POST requests and saves the new record.
+   *
+   * @param array $data
+   *   The data to create the new investigation document entity.
+   *
+   * @return \Drupal\rest\ModifiedResourceResponse
+   *   The response containing the created entity.
    */
-  public function get($investigationId): ResourceResponse {
-
+  public function post(array $data): ModifiedResourceResponse {
+    // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
-  throw new AccessDeniedHttpException();
+      throw new AccessDeniedHttpException();
     }
 
-//    $investigationId = 123; // Replace with the actual investigationId you want to filter by.
+    try {
+      // Create the new investigation document entity.
+      $entity = $this->investigationDocumentsService->createInvestigationDocument($data);
 
+      // Return a response with status code 201 Created.
+      return new ModifiedResourceResponse($entity, 201);
+    }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while creating InvestigationDocument entity: @message', ['@message' => $e->getMessage()]);
 
-//    $query = \Drupal::entityTypeManager('investigation_douments')
-//      ->condition('status', 1) // 1 indicates published.
-//    ->condition('investigationId', $investigationId)
-//      ->accessCheck(TRUE); // Enable access checks.
-
-    // Create an entity query for the investigation_documents entity.
-    $query = $this->entityTypeManager
-      ->getStorage('investigation_documents') // Get the storage handler.
-      ->getQuery() // Create the query.
-      ->condition('status', 1) // Add condition for published documents.
-      ->condition('investigationId', $investigationId) // Add condition for matching investigationId.
-     ->accessCheck(TRUE); // Enable access checks.
-
-    $investigationDocumentIds = $query->execute();
-    $unformattedInvestigationDocuments = InvestigationDocuments::loadMultiple($investigationDocumentIds);
-        $investigationDocumentList = array();
-
-        foreach ($unformattedInvestigationDocuments as $unformattedInvestigationDocument) {
-          if ($unformattedInvestigationDocument instanceof InvestigationDocuments) {
-            $document['label'] = $unformattedInvestigationDocument->getLabel();
-            $document['entityId'] = $unformattedInvestigationDocument->id();
-            $document['stepId'] = $unformattedInvestigationDocument->getStepId();
-            $document['fileEntityId'] = $unformattedInvestigationDocument->getFileId();
-            $document['isVisible'] = $unformattedInvestigationDocument->getVisible();
-
-            $investigationDocumentList[] = $document;
-            unset($document);
-          }
-        }
-
-
-        $response = new ResourceResponse($investigationDocumentList);
-        $response->addCacheableDependency($this->currentUser);
-        return $response;
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
+    }
   }
-
 
 }
