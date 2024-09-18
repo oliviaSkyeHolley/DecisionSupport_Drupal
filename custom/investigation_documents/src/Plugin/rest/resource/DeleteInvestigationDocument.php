@@ -25,8 +25,8 @@ use Drupal\investigation_documents\Services\InvestigationDocumentsService\Invest
  *   id = "delete_investigation_document",
  *   label = @Translation("Delete Investigation Document"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-investigation-document/{fileId}",
- *     "patch" = "/api/delete-investigation-document/{fileId}"
+ *     "canonical" = "/rest/investigation/document/delete/{fileId}",
+ *     "patch" = "/rest/investigation/document/delete/{fileId}"
  *   }
  * )
  *

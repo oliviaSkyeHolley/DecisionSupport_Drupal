@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - investigation_documents
+    - serialization
+    - simple_oauth
+    - user
+id: delete_investigation_document
+plugin_id: delete_investigation_document
+granularity: resource
+configuration:
+  methods:
+    - PATCH
+  formats:
+    - json
+  authentication:
+    - oauth2
+    - cookie

@@ -69,6 +69,10 @@ final class ProcessService implements ProcessServiceInterface {
   public function getProcess($processId) {
 
     $process = Process::load($processId);
+
+    if(!process){
+      throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
+    }
     $processJsonString = $process->getJsonString();
 
     return $processJsonString;

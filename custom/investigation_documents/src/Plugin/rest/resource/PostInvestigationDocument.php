@@ -25,8 +25,7 @@ use Drupal\investigation_documents\Services\InvestigationDocumentsService\Invest
  *   id = "post_investigation_document",
  *   label = @Translation("Post Investigation Document"),
  *   uri_paths = {
- *     "canonical" = "/rest/investigation/document/post",
- *     "create" = "/rest/investigation/document/post"
+ *     "create" = "/rest/investigation/document/post",
  *   }
  * )
  *

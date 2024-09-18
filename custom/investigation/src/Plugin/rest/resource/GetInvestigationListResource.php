@@ -24,7 +24,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  *   id = "get_investigation_list_resource",
  *   label = @Translation("Get Investigation List"),
  *   uri_paths = {
- *     "canonical" = "/rest/get-investigation-list-resource",
+ *     "canonical" = "/rest/investigation/list",
  *   }
  * )
  *

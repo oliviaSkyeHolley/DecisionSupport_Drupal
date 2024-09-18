@@ -24,8 +24,8 @@ use Drupal\process\Services\ProcessService\ProcessService;
  *   id = "delete_process_resource",
  *   label = @Translation("Delete Process"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-process-resource/{processId}",
- *     "patch" = "/api/delete-process-resource/{processId}"
+ *     "canonical" = "/rest/process/delete/{processId}",
+ *     "patch" = "/rest/process/delete/{processId}"
  *   }
  * )
  *

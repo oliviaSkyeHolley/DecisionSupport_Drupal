@@ -24,8 +24,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  *   id = "post_investigation_resource",
  *   label = @Translation("Post Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/post-investigation-resource",
- *     "create" = "/api/post-investigation-resource"
+ *     "create" = "/rest/investigation/post",
  *   }
  * )
  *

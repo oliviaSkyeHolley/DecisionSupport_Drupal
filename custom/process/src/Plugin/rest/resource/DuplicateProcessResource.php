@@ -24,8 +24,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  *   id = "duplicate_process_resource",
  *   label = @Translation("Duplicate Process"),
  *   uri_paths = {
- *     "canonical" = "/api/duplicate-process-resource/{processId}",
- *     "create" = "/api/duplicate-process-resource/{processId}"
+ *     "create" = "/rest/process/duplicate",
  *   }
  * )
  *

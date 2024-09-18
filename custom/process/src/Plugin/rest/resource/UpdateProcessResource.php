@@ -24,8 +24,8 @@ use Drupal\process\Services\ProcessService\ProcessService;
  *   id = "update_process_resource",
  *   label = @Translation("Update Process"),
  *   uri_paths = {
- *     "canonical" = "/api/update-process-resource/{processId}",
- *     "patch" = "/api/update-process-resource/{processId}"
+ *     "canonical" = "/rest/process/update/{processId}",
+ *     "patch" = "/rest/process/update/{processId}"
  *   }
  * )
  *

@@ -9,6 +9,7 @@ use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -24,7 +25,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  *   id = "get_investigation_resource",
  *   label = @Translation("Get Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/get-investigation-resource/{investigationId}",
+ *     "canonical" = "/rest/investigation/get/{investigationId}",
  *   }
  * )
  *

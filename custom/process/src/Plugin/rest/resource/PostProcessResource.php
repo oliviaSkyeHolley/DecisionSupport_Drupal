@@ -24,8 +24,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  *   id = "post_process_resource",
  *   label = @Translation("Post Process"),
  *   uri_paths = {
- *     "canonical" = "/api/post-process-resource",
- *     "create" = "/api/post-process-resource"
+ *     "create" = "/rest/process/post",
  *   }
  * )
  *

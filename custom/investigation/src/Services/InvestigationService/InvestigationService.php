@@ -69,6 +69,9 @@ final class InvestigationService implements InvestigationServiceInterface {
   public function getInvestigation($investigationId) {
 
     $investigation = Investigation::load($investigationId);
+    if (!$investigation) {
+      throw new NotFoundHttpException(sprintf('Investigation with ID %s was not found.', $investigationId));
+    }
     $investigationJsonString = $investigation->getJsonString();
 
     return $investigationJsonString;

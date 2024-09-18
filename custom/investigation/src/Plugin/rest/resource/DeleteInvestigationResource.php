@@ -24,8 +24,8 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  *   id = "delete_investigation_resource",
  *   label = @Translation("Delete Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/delete-investigation-resource/{investigationId}",
- *     "delete" = "/api/delete-investigation-resource/{investigationId}"
+ *     "canonical" = "/rest/investigation/delete/{investigationId}",
+ *     "delete" = "/rest/investigation/delete/{investigationId}"
  *   }
  * )
  *

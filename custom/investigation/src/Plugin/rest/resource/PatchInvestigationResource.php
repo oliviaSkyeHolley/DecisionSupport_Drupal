@@ -24,8 +24,8 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  *   id = "patch_investigation_resource",
  *   label = @Translation("Patch Investigation"),
  *   uri_paths = {
- *     "canonical" = "/api/patch-investigation-resource/{investigationId}",
- *     "patch" = "/api/patch-investigation-resource/{investigationId}"
+ *     "canonical" = "/rest/investigation/update/{investigationId}",
+ *     "patch" = "/rest/investigation/update/{investigationId}"
  *   }
  * )
  *
