@@ -28,6 +28,7 @@
 
 # Manage all .gitignore files with Drupal scaffold.
 # Remove the line below and commit the files for more granular control.
+**/.gitignore
 
 # Ignore the databased Dump Directory
 #
