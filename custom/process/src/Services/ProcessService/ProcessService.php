@@ -70,7 +70,7 @@ final class ProcessService implements ProcessServiceInterface {
 
     $process = Process::load($processId);
 
-    if(!process){
+    if(!$process){
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
     $processJsonString = $process->getJsonString();
@@ -159,8 +159,9 @@ final class ProcessService implements ProcessServiceInterface {
     if (!$process) {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
+    $json_string = json_encode($data);
 
-    $process->setJsonString($data['json_string']);
+    $process->setJsonString($json_string);
     $entity=$process->save();
 
     $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
