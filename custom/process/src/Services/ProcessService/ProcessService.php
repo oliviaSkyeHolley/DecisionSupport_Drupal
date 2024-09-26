@@ -90,7 +90,7 @@ final class ProcessService implements ProcessServiceInterface {
     $jsonstring = [
       'entityId' =>$process->id(),
       'uuid'=>uniqid(),
-      'processLabel' =>$process->label(),
+      'label' =>$process->label(),
       'steps'=>[]
     ];
     $processJsonstring = json_encode($jsonstring);
