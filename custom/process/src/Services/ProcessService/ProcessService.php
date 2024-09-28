@@ -46,13 +46,14 @@ final class ProcessService implements ProcessServiceInterface {
     $processList = array();
     foreach ($unformattedProcesses as $unformattedProcess) {
       if ($unformattedProcess instanceof Process) {
-        $process['label'] = $unformattedProcess->getName();
+        $process['label'] = $unformattedProcess->getLabel();
         $process['entityId'] = $unformattedProcess->id();
         $process['revisionId'] = $unformattedProcess->getRevisionId();
         $process['revisionCreationTime'] = $unformattedProcess->getRevisionCreationTime();
         $process['createdTime'] = $unformattedProcess->getCreatedTime();
         $process['updatedTime'] = $unformattedProcess->getupdatedTime();
         $process['revisionStatus'] = $unformattedProcess->getRevisionStatus();
+        $process['enabled'] = $unformattedProcess->getStatus();
         $process['json_string'] = $unformattedProcess->getJsonString();
 
         $processList[] = $process;
@@ -140,7 +141,7 @@ final class ProcessService implements ProcessServiceInterface {
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
 
-    $process->setName($data['label']);
+    $process->setLabel($data['label']);
     $process->setRevisionStatus($data['revision_status']);
     $entity=$process->save();
 
@@ -182,6 +183,8 @@ final class ProcessService implements ProcessServiceInterface {
     $label = $process -> getLabel();
     $newLabel = "$label - Archived";
     $process->setLabel($newLabel);
+    $process->setStatus(false);
+    $process->setRevisionStatus("Archived");
     $entity=$process->save();
 
     $this->logger->notice('Moved Process with ID @id to archived.', ['@id' => $processId]);

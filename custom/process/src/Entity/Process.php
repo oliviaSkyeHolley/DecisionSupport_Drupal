@@ -301,7 +301,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * @inheritDoc
    */
-  public function getName(): string
+  public function getLabel(): string
   {
     return $this->get('label')->value;
   }
@@ -309,9 +309,9 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function setName(string $name): ProcessInterface
+  public function setLabel(string $label): ProcessInterface
   {
-    $this->set('label', $name);
+    $this->set('label', $label);
     return $this;
   }
 
@@ -341,7 +341,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
     if (isset($targetId[0])) {
       $term = Term::load($targetId[0]['target_id']);
 
-      return $term->getName();
+      return $term->getName() ?? ' ';
     } else {
       return NULL;
     }
@@ -391,5 +391,24 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
   }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getStatus(): bool
+  {
+    return (bool) $this->get('status')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setStatus(bool $new_status)
+  {
+    $this->set('status', $new_status);
+   return $this;
+  }
+
+
 
 }
