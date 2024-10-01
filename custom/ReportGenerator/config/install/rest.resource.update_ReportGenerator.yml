@@ -2,12 +2,12 @@ langcode: en
 status: true
 dependencies:
   module:
-    - process
+    - ReportGenerator
     - serialization
     - simple_oauth
     - user
-id: update_process_resource
-plugin_id: update_process_resource
+id: update_ReportGenerator_resource
+plugin_id: update_ReportGenerator_resource
 granularity: resource
 configuration:
   methods:

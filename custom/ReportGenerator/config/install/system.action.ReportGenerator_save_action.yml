@@ -1,0 +1,10 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ReportGenerator
+id: ReportGenerator_save_action
+label: 'Save ReportGenerator'
+type: ReportGenerator
+plugin: entity:save_action:ReportGenerator
+configuration: {  }

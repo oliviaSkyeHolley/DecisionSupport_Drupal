@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Plugin\rest\resource;
+namespace Drupal\ReportGenerator\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,17 +14,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
-use Drupal\process\Services\ProcessService\ProcessService;
+use Drupal\ReportGenerator\Entity\ReportGenerator;
+use Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService;
 
 /**
- * Represents post_process records as resources.
+ * Represents post_ReportGenerator records as resources.
  *
  * @RestResource (
- *   id = "post_process_resource",
- *   label = @Translation("Post Process"),
+ *   id = "post_ReportGenerator_resource",
+ *   label = @Translation("Post ReportGenerator"),
  *   uri_paths = {
- *     "create" = "/rest/process/post",
+ *     "create" = "/rest/ReportGenerator/post",
  *   }
  * )
  *
@@ -50,7 +50,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class PostProcessResource extends ResourceBase {
+final class PostReportGeneratorResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -68,13 +68,13 @@ final class PostProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ReportGeneratorService $ReportGenerator_service
 
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('post_process_resource');
+    $this->storage = $keyValueFactory->get('post_ReportGenerator_resource');
     $this->currentUser = $currentUser;
-    $this->processService = $process_service;
+    $this->ReportGeneratorService = $ReportGenerator_service;
   }
 
   /**
@@ -89,7 +89,7 @@ final class PostProcessResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('process.service')
+      $container->get('ReportGenerator.service')
     );
   }
 
@@ -97,7 +97,7 @@ final class PostProcessResource extends ResourceBase {
    * Responds to POST requests and saves the new record.
    *
    * @param array $data
-   *   The data to create the new process entity.
+   *   The data to create the new ReportGenerator entity.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The response containing the created entity.
@@ -109,15 +109,15 @@ final class PostProcessResource extends ResourceBase {
     }
 
     try {
-      // Create the new process entity.
-      $entity = $this->processService->createProcess($data);
+      // Create the new ReportGenerator entity.
+      $entity = $this->ReportGeneratorService->createReportGenerator($data);
 
       // Return a response with status code 201 Created.
       return new ModifiedResourceResponse($entity, 201);
     }
     catch (\Exception $e) {
       // Log the error message.
-      $this->logger->error('An error occurred while creating Process entity: @message', ['@message' => $e->getMessage()]);
+      $this->logger->error('An error occurred while creating ReportGenerator entity: @message', ['@message' => $e->getMessage()]);
 
       // Throw a generic HTTP exception for internal server errors.
       throw new HttpException(500, 'Internal Server Error');

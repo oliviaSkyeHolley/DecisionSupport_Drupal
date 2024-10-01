@@ -2,38 +2,38 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Entity;
+namespace Drupal\ReportGenerator\Entity;
 
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\process\ProcessInterface;
+use Drupal\ReportGenerator\ReportGeneratorInterface;
 use Drupal\taxonomy\Entity\Term;
 use Drupal\user\EntityOwnerTrait;
 use Drupal\Core\Datetime\DateFormatterInterface;
 
 /**
- * Defines the process entity class.
+ * Defines the ReportGenerator entity class.
  *
  * @ContentEntityType(
- *   id = "process",
- *   label = @Translation("Process"),
- *   label_collection = @Translation("Processes"),
- *   label_singular = @Translation("process"),
- *   label_plural = @Translation("processes"),
+ *   id = "ReportGenerator",
+ *   label = @Translation("ReportGenerator"),
+ *   label_collection = @Translation("ReportGenerator"),
+ *   label_singular = @Translation("ReportGenerator"),
+ *   label_plural = @Translation("ReportGenerator"),
  *   label_count = @PluralTranslation(
- *     singular = "@count processes",
- *     plural = "@count processes",
+ *     singular = "@count ReportGenerator",
+ *     plural = "@count ReportGenerator",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\process\ProcessListBuilder",
+ *     "list_builder" = "Drupal\ReportGenerator\ReportGeneratorListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
- *     "access" = "Drupal\process\ProcessAccessControlHandler",
+ *     "access" = "Drupal\ReportGenerator\ReportGeneratorAccessControlHandler",
  *     "form" = {
- *       "add" = "Drupal\process\Form\ProcessForm",
- *       "edit" = "Drupal\process\Form\ProcessForm",
+ *       "add" = "Drupal\ReportGenerator\Form\ReportGeneratorForm",
+ *       "edit" = "Drupal\ReportGenerator\Form\ReportGeneratorForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *       "delete-multiple-confirm" = "Drupal\Core\Entity\Form\DeleteMultipleForm",
  *       "revision-delete" = \Drupal\Core\Entity\Form\RevisionDeleteForm::class,
@@ -44,13 +44,13 @@ use Drupal\Core\Datetime\DateFormatterInterface;
  *       "revision" = \Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider::class,
  *     },
  *   },
- *   base_table = "process",
- *   data_table = "process_field_data",
- *   revision_table = "process_revision",
- *   revision_data_table = "process_field_revision",
+ *   base_table = "ReportGenerator",
+ *   data_table = "ReportGenerator_field_data",
+ *   revision_table = "ReportGenerator_revision",
+ *   revision_data_table = "ReportGenerator_field_revision",
  *   show_revision_ui = TRUE,
  *   translatable = TRUE,
- *   admin_permission = "administer process",
+ *   admin_permission = "administer ReportGenerator",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",
@@ -65,21 +65,21 @@ use Drupal\Core\Datetime\DateFormatterInterface;
  *     "revision_log_message" = "revision_log",
  *   },
  *   links = {
- *     "collection" = "/admin/content/process",
- *     "add-form" = "/process/add",
- *     "canonical" = "/process/{process}",
- *     "edit-form" = "/process/{process}/edit",
- *     "delete-form" = "/process/{process}/delete",
- *     "delete-multiple-form" = "/admin/content/process/delete-multiple",
- *     "revision" = "/process/{process}/revision/{process_revision}/view",
- *     "revision-delete-form" = "/process/{process}/revision/{process_revision}/delete",
- *     "revision-revert-form" = "/process/{process}/revision/{process_revision}/revert",
- *     "version-history" = "/process/{process}/revisions",
+ *     "collection" = "/admin/content/ReportGenerator",
+ *     "add-form" = "/ReportGenerator/add",
+ *     "canonical" = "/ReportGenerator/{ReportGenerator}",
+ *     "edit-form" = "/ReportGenerator/{ReportGenerator}/edit",
+ *     "delete-form" = "/ReportGenerator/{ReportGenerator}/delete",
+ *     "delete-multiple-form" = "/admin/content/ReportGenerator/delete-multiple",
+ *     "revision" = "/ReportGenerator/{ReportGenerator}/revision/{ReportGenerator_revision}/view",
+ *     "revision-delete-form" = "/ReportGenerator/{ReportGenerator}/revision/{ReportGenerator_revision}/delete",
+ *     "revision-revert-form" = "/ReportGenerator/{ReportGenerator}/revision/{ReportGenerator_revision}/revert",
+ *     "version-history" = "/ReportGenerator/{ReportGenerator}/revisions",
  *   },
- *   field_ui_base_route = "entity.process.settings",
+ *   field_ui_base_route = "entity.ReportGenerator.settings",
  * )
  */
-final class Process extends RevisionableContentEntityBase implements ProcessInterface {
+final class ReportGenerator extends RevisionableContentEntityBase implements ReportGeneratorInterface {
 
   use EntityChangedTrait;
   use EntityOwnerTrait;
@@ -104,7 +104,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
 
     $fields['label'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
-      ->setDescription(t('The name of the Process entity.'))
+      ->setDescription(t('The name of the ReportGenerator entity.'))
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
@@ -127,7 +127,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
 
     $fields['language'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Language'))
-      ->setDescription(t('The language of the process.'))
+      ->setDescription(t('The language of the ReportGenerator.'))
       ->setDisplayOptions('form', [
         'type' => 'text',
         'weight' => 0,
@@ -194,7 +194,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
 
     $fields['version'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Version'))
-      ->setDescription(t('The version of the process.'))
+      ->setDescription(t('The version of the ReportGenerator.'))
       ->setDisplayOptions('form', [
         'type' => 'text',
         'weight' => 0,
@@ -209,7 +209,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
 
     $fields['valid'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Validity'))
-      ->setDescription(t('The validity of the process.'))
+      ->setDescription(t('The validity of the ReportGenerator.'))
       ->setRevisionable(TRUE)
       ->setDefaultValue(TRUE);
 
@@ -250,7 +250,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the process was created.'))
+      ->setDescription(t('The time that the ReportGenerator was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -266,7 +266,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the process was last edited.'))
+      ->setDescription(t('The time that the ReportGenerator was last edited.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -278,7 +278,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
         'weight' => 20,
       ])
       ->setDisplayConfigurable('view', TRUE);
-      
+
     return $fields;
   }
 
@@ -309,7 +309,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function setName(string $name): ProcessInterface
+  public function setName(string $name): ReportGeneratorInterface
   {
     $this->set('label', $name);
     return $this;
@@ -326,7 +326,7 @@ final class Process extends RevisionableContentEntityBase implements ProcessInte
   /**
    * {@inheritdoc}
    */
-  public function setJsonString(string $jsonString): ProcessInterface
+  public function setJsonString(string $jsonString): ReportGeneratorInterface
   {
     $this->set('json_string', $jsonString);
     return $this;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Plugin\rest\resource;
+namespace Drupal\ReportGenerator\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,18 +14,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
-use Drupal\process\Services\ProcessService\ProcessService;
+use Drupal\ReportGenerator\Entity\ReportGenerator;
+use Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService;
 
 /**
- * Represents Update Process records as resources.
+ * Represents Update ReportGenerator records as resources.
  *
  * @RestResource (
- *   id = "update_process_resource",
- *   label = @Translation("Update Process"),
+ *   id = "update_ReportGenerator_resource",
+ *   label = @Translation("Update ReportGenerator"),
  *   uri_paths = {
- *     "canonical" = "/rest/process/update/{processId}",
- *     "patch" = "/rest/process/update/{processId}"
+ *     "canonical" = "/rest/ReportGenerator/update/{ReportGeneratorId}",
+ *     "patch" = "/rest/ReportGenerator/update/{ReportGeneratorId}"
  *   }
  * )
  *
@@ -51,7 +51,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class UpdateProcessResource extends ResourceBase {
+final class UpdateReportGeneratorResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -69,12 +69,12 @@ final class UpdateProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ReportGeneratorervice $ReportGeneratorservice
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('update_process_resource');
+    $this->storage = $keyValueFactory->get('update_ReportGenerator_resource');
     $this->currentUser = $currentUser;
-    $this->processService = $process_service;
+    $this->ReportGeneratorService = $ReportGeneratorservice;
   }
 
   /**
@@ -89,25 +89,25 @@ final class UpdateProcessResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('process.service')
+      $container->get('ReportGenerator.service')
     );
   }
 
  /**
    * Responds to PATCH requests.
    *
-   * @param int $processId
-   *   The ID of the process entity to update.
+   * @param int $ReportGeneratorId
+   *   The ID of the ReportGenerator entity to update.
    * @param array $data
-   *   The data to update the process entity with.
+   *   The data to update the ReportGenerator entity with.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
    *   The modified resource response.
-   * 
+   *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
    *   Thrown when an error occurs during the update.
    */
-  public function patch($processId, array $data): ModifiedResourceResponse {
+  public function patch($ReportGeneratorId, array $data): ModifiedResourceResponse {
 
     // Use current user after pass authentication to validate access.
     if (!$this->currentUser->hasPermission('access content')) {
@@ -115,19 +115,19 @@ final class UpdateProcessResource extends ResourceBase {
     }
 
     try {
-      // Attempt to update the process entity.
-      $entity = $this->processService->updateProcess($processId,$data);
-      $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
-      
+      // Attempt to update the ReportGenerator entity.
+      $entity = $this->ReportGeneratorService->updateReportGenerator($ReportGeneratorId,$data);
+      $this->logger->notice('The ReportGenerator @id has been updated.', ['@id' => $ReportGeneratorId]);
+
       // Return a response with status code 200 OK.
       return new ModifiedResourceResponse($entity, 200);
-    } 
+    }
     catch (\Exception $e) {
       // Handle any other exceptions that occur during the update.
-      $this->logger->error('An error occurred while updating Process: @message', ['@message' => $e->getMessage()]);
+      $this->logger->error('An error occurred while updating ReportGenerator: @message', ['@message' => $e->getMessage()]);
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-  
+
 
 }

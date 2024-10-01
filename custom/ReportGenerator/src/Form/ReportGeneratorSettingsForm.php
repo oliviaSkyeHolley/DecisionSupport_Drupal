@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Form;
+namespace Drupal\ReportGenerator\Form;
 
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Configuration form for a process entity type.
+ * Configuration form for a ReportGenerator entity type.
  */
-final class ProcessSettingsForm extends FormBase {
+final class ReportGeneratorSettingsForm extends FormBase {
 
   /**
    * {@inheritdoc}
    */
   public function getFormId(): string {
-    return 'process_settings';
+    return 'ReportGenerator_settings';
   }
 
   /**
@@ -25,7 +25,7 @@ final class ProcessSettingsForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
 
     $form['settings'] = [
-      '#markup' => $this->t('Settings form for a process entity type.'),
+      '#markup' => $this->t('Settings form for a ReportGenerator entity type.'),
     ];
 
     $form['actions'] = [

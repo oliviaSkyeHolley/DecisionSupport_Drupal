@@ -2,16 +2,16 @@ langcode: en
 status: true
 dependencies:
   module:
-    - process
+    - ReportGenerator
     - serialization
     - simple_oauth
     - user
-id: get_process_list_resource
-plugin_id: get_process_list_resource
+id: patch_ReportGenerator_resource
+plugin_id: patch_ReportGenerator_resource
 granularity: resource
 configuration:
   methods:
-    - GET
+    - PATCH
   formats:
     - json
   authentication:

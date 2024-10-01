@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Form;
+namespace Drupal\ReportGenerator\Form;
 
 use Drupal\Core\Entity\ContentEntityForm;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
- * Form controller for the process entity edit forms.
+ * Form controller for the ReportGenerator entity edit forms.
  */
-final class ProcessForm extends ContentEntityForm {
+final class ReportGeneratorForm extends ContentEntityForm {
 
   /**
    * {@inheritdoc}
@@ -26,13 +26,13 @@ final class ProcessForm extends ContentEntityForm {
 
     switch ($result) {
       case SAVED_NEW:
-        $this->messenger()->addStatus($this->t('New process %label has been created.', $message_args));
-        $this->logger('process')->notice('New process %label has been created.', $logger_args);
+        $this->messenger()->addStatus($this->t('New ReportGenerator %label has been created.', $message_args));
+        $this->logger('ReportGenerator')->notice('New ReportGenerator %label has been created.', $logger_args);
         break;
 
       case SAVED_UPDATED:
-        $this->messenger()->addStatus($this->t('The process %label has been updated.', $message_args));
-        $this->logger('process')->notice('The process %label has been updated.', $logger_args);
+        $this->messenger()->addStatus($this->t('The ReportGenerator %label has been updated.', $message_args));
+        $this->logger('ReportGenerator')->notice('The ReportGenerator %label has been updated.', $logger_args);
         break;
 
       default:

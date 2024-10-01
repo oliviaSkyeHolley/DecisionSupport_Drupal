@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process;
+namespace Drupal\ReportGenerator;
 
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityListBuilder;
 
 /**
- * Provides a list controller for the process entity type.
+ * Provides a list controller for the report-generator entity type.
  */
-final class ProcessListBuilder extends EntityListBuilder {
+final class ReportGeneratorListBuilder extends EntityListBuilder {
 
   /**
    * {@inheritdoc}
@@ -29,7 +29,7 @@ final class ProcessListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity): array {
-    /** @var \Drupal\process\ProcessInterface $entity */
+    /** @var \Drupal\report-generator\ReportGeneratorInterface $entity */
     $row['id'] = $entity->id();
     $row['label'] = $entity->toLink();
     $row['status'] = $entity->get('status')->value ? $this->t('Enabled') : $this->t('Disabled');

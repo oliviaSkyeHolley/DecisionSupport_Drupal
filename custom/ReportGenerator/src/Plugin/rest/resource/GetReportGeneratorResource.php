@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Plugin\rest\resource;
+namespace Drupal\ReportGenerator\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,19 +14,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
-use Drupal\process\Services\ProcessService\ProcessService;
+use Drupal\ReportGenerator\Entity\ReportGenerator;
+use Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService;
 
 /**
- * Represents Patch Process records as resources.
+ * Represents Get ReportGenerator List records as resources.
  *
  * @RestResource (
- *   id = "patch_process_resource",
- *   label = @Translation("Patch Process"),
+ *   id = "get_ReportGenerator_list_resource",
+ *   label = @Translation("Get ReportGenerator List"),
  *   uri_paths = {
- *     "canonical" = "/rest/process/patch/{processId}",
- *      "patch" = "/rest/process/patch/{processId}"
- *     
+ *     "canonical" = "/rest/ReportGenerator/list",
  *   }
  * )
  *
@@ -52,7 +50,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class PatchProcessResource extends ResourceBase {
+final class GetReportGeneratorListResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -70,12 +68,12 @@ final class PatchProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ReportGeneratorService $ReportGenerator_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('patch_process_resource');
+    $this->storage = $keyValueFactory->get('get_ReportGenerator_list_resource');
     $this->currentUser = $currentUser;
-    $this->processService = $process_service;
+    $this->ReportGeneratorService = $ReportGenerator_service;
   }
 
   /**
@@ -90,46 +88,39 @@ final class PatchProcessResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('process.service')
+      $container->get('ReportGenerator.service')
     );
   }
 
 
   /**
-   * Responds to PATCH requests.
+   * Responds to GET requests.
    *
-   * @param int $processId
-   *   The ID of the process entity to update.
-   * @param array $data
-   *   The data to update the process entity with.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The modified resource response.
-   * 
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Thrown when an error occurs during the update.
+   * @return \Drupal\rest\ResourceResponse
+   *   The HTTP response object.
    */
-  public function patch($processId, array $data): ModifiedResourceResponse {
-
-    // Use current user after pass authentication to validate access.
+  public function get() {
+    // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
     try {
-      // Attempt to update the process entity.
-      $entity = $this->processService->patchProcess($processId,$data);
-      $this->logger->notice('The Process @id has been updated.', ['@id' => $processId]);
-      
-      // Return a response with status code 200 OK.
-      return new ModifiedResourceResponse($entity, 200);
-    } 
+      // Retrieve the list of ReportGenerator.
+      $ReportGeneratorList = $this->ReportGeneratorService->getReportGeneratorList();
+      $response = new ResourceResponse($ReportGeneratorList);
+      $response->addCacheableDependency($this->currentUser);
+
+      return $response;
+    }
     catch (\Exception $e) {
-      // Handle any other exceptions that occur during the update.
-      $this->logger->error('An error occurred while updating Process: @message', ['@message' => $e->getMessage()]);
+      // Log the error message.
+      $this->logger->error('An error occurred while loading ReportGenerator list: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-  
+
 
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Plugin\rest\resource;
+namespace Drupal\ReportGenerator\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,18 +14,19 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
-use Drupal\process\Services\ProcessService\ProcessService;
+use Drupal\ReportGenerator\Entity\ReportGenerator;
+use Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService;
 
 /**
- * Represents Delete Process records as resources.
+ * Represents Patch ReportGenerator records as resources.
  *
  * @RestResource (
- *   id = "delete_process_resource",
- *   label = @Translation("Delete Process"),
+ *   id = "patch_ReportGenerator_resource",
+ *   label = @Translation("Patch ReportGenerator"),
  *   uri_paths = {
- *     "canonical" = "/rest/process/delete/{processId}",
- *     "patch" = "/rest/process/delete/{processId}"
+ *     "canonical" = "/rest/ReportGenerator/patch/{ReportGeneratorId}",
+ *      "patch" = "/rest/ReportGenerator/patch/{ReportGeneratorId}"
+ *
  *   }
  * )
  *
@@ -51,7 +52,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class DeleteProcessResource extends ResourceBase {
+final class PatchReportGeneratorResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -69,12 +70,12 @@ final class DeleteProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ReportGeneratorService $ReportGenerator_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('delete_process_resource');
+    $this->storage = $keyValueFactory->get('patch_ReportGenerator_resource');
     $this->currentUser = $currentUser;
-    $this->processService = $process_service;
+    $this->ReportGeneratorService = $ReportGenerator_service;
   }
 
   /**
@@ -89,41 +90,46 @@ final class DeleteProcessResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('process.service')
+      $container->get('ReportGenerator.service')
     );
   }
 
- /**
-   * Responds to Patch requests.
+
+  /**
+   * Responds to PATCH requests.
    *
-   * @param string $processId
-   *   The ID of the process entity to be archived.
+   * @param int $ReportGeneratorId
+   *   The ID of the ReportGenerator entity to update.
+   * @param array $data
+   *   The data to update the ReportGenerator entity with.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   The HTTP response object.
+   *   The modified resource response.
    *
    * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Thrown when an error occurs during the process.
+   *   Thrown when an error occurs during the update.
    */
-  public function patch($processId): ModifiedResourceResponse {
-    // Check user permissions.
+  public function patch($ReportGeneratorId, array $data): ModifiedResourceResponse {
+
+    // Use current user after pass authentication to validate access.
     if (!$this->currentUser->hasPermission('access content')) {
-       throw new AccessDeniedHttpException();
-     }
- 
-     try {
-      // Attempt to update the process entity.
-      $entity = $this->processService->deleteProcess($processId);
-      $this->logger->notice('The Process @id has been moved to Archived.', ['@id' => $processId]);
-      
+      throw new AccessDeniedHttpException();
+    }
+
+    try {
+      // Attempt to update the ReportGenerator entity.
+      $entity = $this->ReportGeneratorService->patchReportGenerator($ReportGeneratorId,$data);
+      $this->logger->notice('The ReportGenerator @id has been updated.', ['@id' => $ReportGeneratorId]);
+
       // Return a response with status code 200 OK.
       return new ModifiedResourceResponse($entity, 200);
-    } 
+    }
     catch (\Exception $e) {
-      // Handle any other exceptions that occur during moving entity to archived.
-      $this->logger->error('An error occurred while moving Process to archived: @message', ['@message' => $e->getMessage()]);
+      // Handle any other exceptions that occur during the update.
+      $this->logger->error('An error occurred while updating ReportGenerator: @message', ['@message' => $e->getMessage()]);
       throw new HttpException(500, 'Internal Server Error');
     }
-   }
+  }
+
 
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\process\Plugin\rest\resource;
+namespace Drupal\ReportGenerator\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,17 +14,18 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\process\Entity\Process;
-use Drupal\process\Services\ProcessService\ProcessService;
+use Drupal\ReportGenerator\Entity\ReportGenerator;
+use Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService;
 
 /**
- * Represents Duplicate Process records as resources.
+ * Represents Delete ReportGenerator records as resources.
  *
  * @RestResource (
- *   id = "duplicate_process_resource",
- *   label = @Translation("Duplicate Process"),
+ *   id = "delete_ReportGenerator_resource",
+ *   label = @Translation("Delete ReportGenerator"),
  *   uri_paths = {
- *     "create" = "/rest/process/duplicate",
+ *     "canonical" = "/rest/ReportGenerator/delete/{ReportGeneratorId}",
+ *     "patch" = "/rest/ReportGenerator/delete/{ReportGeneratorId}"
  *   }
  * )
  *
@@ -50,7 +51,7 @@ use Drupal\process\Services\ProcessService\ProcessService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class DuplicateProcessResource extends ResourceBase {
+final class DeleteReportGeneratorResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -68,12 +69,12 @@ final class DuplicateProcessResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    ProcessService $process_service
+    ReportGeneratorService $ReportGenerator_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('duplicate_process_resource');
+    $this->storage = $keyValueFactory->get('delete_ReportGenerator_resource');
     $this->currentUser = $currentUser;
-    $this->processService = $process_service;
+    $this->ReportGeneratorService = $ReportGenerator_service;
   }
 
   /**
@@ -88,38 +89,41 @@ final class DuplicateProcessResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('process.service')
+      $container->get('ReportGenerator.service')
     );
   }
 
-
-  /**
-   * Responds to POST requests and saves the new record.
+ /**
+   * Responds to Patch requests.
    *
-   * @param array $data
-   *   The data to create the new duplicated process entity.
+   * @param string $ReportGeneratorId
+   *   The ID of the ReportGenerator entity to be archived.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   The response containing the created entity.
+   *   The HTTP response object.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
+   *   Thrown when an error occurs during the ReportGenerator.
    */
-  public function post(array $data): ModifiedResourceResponse {
+  public function patch($ReportGeneratorId): ModifiedResourceResponse {
     // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
+       throw new AccessDeniedHttpException();
+     }
+
+     try {
+      // Attempt to update the ReportGenerator entity.
+      $entity = $this->ReportGeneratorService->deleteReportGenerator($ReportGeneratorId);
+      $this->logger->notice('The ReportGenerator @id has been moved to Archived.', ['@id' => $ReportGeneratorId]);
+
+      // Return a response with status code 200 OK.
+      return new ModifiedResourceResponse($entity, 200);
     }
-
-    try {
-      // Create the duplicate process entity.
-      $entity = $this->processService->duplicateProcess($data);
-
-      // Return a response with status code 201 Created.
-      return new ModifiedResourceResponse($entity, 201);
-    } 
     catch (\Exception $e) {
-      // Handle any exceptions that occur during entity creation.
-      $this->logger->error('An error occurred while duplicating Process entity: @message', ['@message' => $e->getMessage()]);
+      // Handle any other exceptions that occur during moving entity to archived.
+      $this->logger->error('An error occurred while moving ReportGenerator to archived: @message', ['@message' => $e->getMessage()]);
       throw new HttpException(500, 'Internal Server Error');
     }
-  }
+   }
 
 }
