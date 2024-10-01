@@ -117,12 +117,10 @@ final class InvestigationService implements InvestigationServiceInterface {
     if (!$investigation) {
       throw new NotFoundHttpException(sprintf('Investigation with ID %s was not found.', $investigationId));
     }
-
-    $investigation->setJsonString($data['json_string']);
+    $json_string = json_encode($data);
+    $investigation->setJsonString($json_string);
     $entity=$investigation->save();
-
-    $this->logger->notice('The Investigation @id has been updated.', ['@id' => $investigationId]);
-
+    
     return $entity;
   }
 
