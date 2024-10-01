@@ -132,12 +132,12 @@ final class InvestigationService implements InvestigationServiceInterface {
 
     $investigation = Investigation::load($investigationId);
     if (!$investigation) {
-      throw new NotFoundHttpException(sprintf('Investigation with ID %s was not found.', $processId));
+      throw new NotFoundHttpException(sprintf('Investigation with ID %s was not found.', $investigationId));
     }
     
     $investigation->delete();
 
-    $this->logger->notice('Moved Investigation with ID @id to archived.', ['@id' => $processId]);
+    $this->logger->notice('Moved Investigation with ID @id to archived.', ['@id' => $investigationId]);
 
   }
 

@@ -113,7 +113,7 @@ final class DeleteInvestigationResource extends ResourceBase {
  
      try {
         // Delete the investigation entity.
-       $this->investigationBuilderService->deleteInvestigation($investigationId);
+       $this->investigationService->deleteInvestigation($investigationId);
        return new ModifiedResourceResponse(NULL, 204);
      } 
      catch (\Exception $e) {
