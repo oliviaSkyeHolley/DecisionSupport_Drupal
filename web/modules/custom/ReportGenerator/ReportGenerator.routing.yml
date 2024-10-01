@@ -1,0 +1,7 @@
+entity.ReportGenerator.settings:
+  path: 'admin/structure/ReportGenerator'
+  defaults:
+    _form: '\Drupal\ReportGenerator\Form\ReportGeneratorSettingsForm'
+    _title: 'ReportGenerator'
+  requirements:
+    _permission: 'administer ReportGenerator'

@@ -1,0 +1,17 @@
+administer ReportGenerator:
+  title: 'Administer ReportGenerator'
+  restrict access: true
+view ReportGenerator:
+  title: 'View ReportGenerator'
+edit ReportGenerator:
+  title: 'Edit ReportGenerator'
+delete ReportGenerator:
+  title: 'Delete ReportGenerator'
+create ReportGenerator:
+  title: 'Create ReportGenerator'
+view process ReportGenerator:
+  title: 'View ReportGenerator revision'
+revert ReportGenerator revision:
+  title: 'Revert ReportGenerator revision'
+delete ReportGenerator revision:
+  title: 'Delete ReportGenerator revision'

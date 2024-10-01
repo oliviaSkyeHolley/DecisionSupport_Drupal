@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ReportGenerator
+    - serialization
+    - simple_oauth
+    - user
+id: patch_ReportGenerator_resource
+plugin_id: patch_ReportGenerator_resource
+granularity: resource
+configuration:
+  methods:
+    - PATCH
+  formats:
+    - json
+  authentication:
+    - oauth2
+    - cookie

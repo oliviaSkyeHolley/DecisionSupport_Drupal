@@ -1,0 +1,4 @@
+services:
+  ReportGenerator.service:
+    class:  Drupal\ReportGenerator\Services\ReportGeneratorService\ReportGeneratorService
+    arguments: ['@entity_type.manager', '@logger.channel.default']

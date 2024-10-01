@@ -1,0 +1,11 @@
+entity.ReportGenerator.settings:
+  title: 'ReportGenerator'
+  description: 'Configure a ReportGenerator entity type.'
+  route_name:  entity.ReportGenerator.settings
+  parent: system.admin_structure
+
+entity.ReportGenerator.collection:
+  title: 'ReportGenerator'
+  description: 'List of generated reports.'
+  route_name: entity.ReportGenerator.collection
+  parent: system.admin_content

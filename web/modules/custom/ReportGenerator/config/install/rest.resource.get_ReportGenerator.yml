@@ -1,0 +1,19 @@
+langcode: en
+status: true
+dependencies:
+  module:
+    - ReportGenerator
+    - serialization
+    - simple_oauth
+    - user
+id: get_ReportGenerator_resource
+plugin_id: get_ReportGenerator_resource
+granularity: resource
+configuration:
+  methods:
+    - GET
+  formats:
+    - json
+  authentication:
+    - oauth2
+    - cookie
