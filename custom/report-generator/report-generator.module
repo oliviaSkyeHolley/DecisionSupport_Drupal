@@ -22,7 +22,7 @@ function process_theme(): array {
 /**
  * Prepares variables for process templates.
  *
- * Default template: report-generator.html.twig.
+ * Default template: process.html.twig.
  *
  * @param array $variables
  *   An associative array containing:
