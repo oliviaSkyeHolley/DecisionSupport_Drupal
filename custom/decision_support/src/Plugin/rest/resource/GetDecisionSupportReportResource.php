@@ -13,6 +13,9 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\decision_support\Entity\DecisionSupport;
+use Drupal\decision_support\Services\DecisionSupportService\DecisionSupportService;
 
 /**
  * Represents get_decision_support_report records as resources.
@@ -65,6 +68,8 @@ final class GetDecisionSupportReportResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_decision_support_report_resource');
