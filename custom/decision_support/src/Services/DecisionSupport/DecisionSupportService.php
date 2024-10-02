@@ -61,4 +61,28 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
 
     return $decisionSupportList;
   }
+
+
+
+  public function getdecisionSupportReportList() {
+
+    $unformattedDecisionSupportReport = DecisionSupportReport::loadMultiple();
+    $decisionSupportReportList = array();
+    foreach ($unformattedDecisionSupportReport as $unformattedDecisionSupportReport) {
+      if ($unformattedDecisionSupportReport instanceof DecisionSupport) {
+        $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
+        $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
+        $decisionSupportReport['revisionId'] = $unformattedDecisionSupportReport->getRevisionId();
+        $decisionSupportReport['createdTime'] = $unformattedDecisionSupportReport->getCreatedTime();
+        $decisionSupportReport['updatedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
+        $decisionSupportReport['revisionStatus'] = $unformattedDecisionSupportReport->getRevisionStatus();
+        $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
+
+        $decisionSupportReportList[] = $decisionSupportReport;
+        unset($decisionSupportReport);
+      }
+    }
+
+    return $decisionSupportReportList;
+  }
 }

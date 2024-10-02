@@ -6,6 +6,8 @@ namespace Drupal\decision_support\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
+use Drupal\Core\Session\AccountProxyInterface;
+use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 use Drupal\rest\ModifiedResourceResponse;
 use Drupal\rest\Plugin\ResourceBase;
 use Drupal\rest\ResourceResponse;
@@ -13,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Drupal\decision_support\Entity\DecisionSupport;
 
 /**
  * Represents get_decision_support_report_list records as resources.
@@ -65,9 +68,13 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
     array $serializer_formats,
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_decision_support_report_list_resource');
+    $this->currentUser = $currentUser;
+    $this->decisonSupportService = $decision_support_service;
   }
 
   /**
@@ -80,62 +87,66 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('decision_support.service')
     );
   }
 
-  /**
-   * Responds to POST requests and saves the new record.
-   */
-  public function post(array $data): ModifiedResourceResponse {
-    $data['id'] = $this->getNextId();
-    $this->storage->set($data['id'], $data);
-    $this->logger->notice('Created new get_decision_support_report_list record @id.', ['@id' => $data['id']]);
-    // Return the newly created record in the response body.
-    return new ModifiedResourceResponse($data, 201);
-  }
 
   /**
    * Responds to GET requests.
+   *
+   * @return \Drupal\rest\ResourceResponse
+   *  The HTTP response object.
+   *
+   * public function get($id): ResourceResponse {
+   *
+   * // Check user permissions.
+   * if (!$this->currentUser->hasPermission('access content')) {
+   * throw new AccessDeniedHttpException();
+   * }
    */
-  public function get($id): ResourceResponse {
+  public function get()
+  {
+
+    // Check user permissions.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
+    try {
+      // Retrieve the list of decision.
+      $decisionSupportReportList = $this->decisionSupportService->getdecisionSupportReportList();
+      $response = new ResourceResponse($decisionSupportReportList);
+      $response->addCacheableDependency($this->currentUser);
+
+      return $response;
+    }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while loading decision support list: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
+    }
+  }
+}
+/*
     if (!$this->storage->has($id)) {
       throw new NotFoundHttpException();
     }
     $resource = $this->storage->get($id);
     return new ResourceResponse($resource);
   }
-
-  /**
-   * Responds to PATCH requests.
-   */
-  public function patch($id, array $data): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $stored_data = $this->storage->get($id);
-    $data += $stored_data;
-    $this->storage->set($id, $data);
-    $this->logger->notice('The get_decision_support_report_list record @id has been updated.', ['@id' => $id]);
-    return new ModifiedResourceResponse($data, 200);
-  }
-
-  /**
-   * Responds to DELETE requests.
-   */
-  public function delete($id): ModifiedResourceResponse {
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $this->storage->delete($id);
-    $this->logger->notice('The get_decision_support_report_list record @id has been deleted.', ['@id' => $id]);
-    // Deleted responses have an empty body.
-    return new ModifiedResourceResponse(NULL, 204);
-  }
+*/
+/*
 
   /**
    * {@inheritdoc}
    */
+
+/*
   protected function getBaseRoute($canonical_path, $method): Route {
     $route = parent::getBaseRoute($canonical_path, $method);
     // Set ID validation pattern.
@@ -148,9 +159,11 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
   /**
    * Returns next available ID.
    */
+/*
   private function getNextId(): int {
     $ids = \array_keys($this->storage->getAll());
     return count($ids) > 0 ? max($ids) + 1 : 1;
   }
 
 }
+ */
