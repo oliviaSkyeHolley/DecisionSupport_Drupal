@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Drupal\investigation\Services\InvestigationService;
 
-
 use Drupal\investigation\Entity\Investigation;
 use Drupal\process\Entity\Process;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -16,7 +15,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class InvestigationService implements InvestigationServiceInterface {
 
- /**
+  /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface

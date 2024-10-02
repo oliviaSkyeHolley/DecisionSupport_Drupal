@@ -2,38 +2,36 @@
 
 declare(strict_types=1);
 
-namespace Drupal\investigation\Entity;
+namespace Drupal\decision_support\Entity;
 
 use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\RevisionableContentEntityBase;
 use Drupal\Core\Field\BaseFieldDefinition;
-use Drupal\investigation\InvestigationInterface;
-use Drupal\taxonomy\Entity\Term;
+use Drupal\decision_support\DecisionSupportInterface;
 use Drupal\user\EntityOwnerTrait;
-use Drupal\Core\Datetime\DateFormatterInterface;
 
 /**
- * Defines the investigation entity class.
+ * Defines the decision support entity class.
  *
  * @ContentEntityType(
- *   id = "investigation",
- *   label = @Translation("Investigation"),
- *   label_collection = @Translation("Investigations"),
- *   label_singular = @Translation("investigation"),
- *   label_plural = @Translation("investigations"),
+ *   id = "decision_support",
+ *   label = @Translation("Decision Support"),
+ *   label_collection = @Translation("Decision Supports"),
+ *   label_singular = @Translation("decision support"),
+ *   label_plural = @Translation("decision supports"),
  *   label_count = @PluralTranslation(
- *     singular = "@count investigations",
- *     plural = "@count investigations",
+ *     singular = "@count decision supports",
+ *     plural = "@count decision supports",
  *   ),
  *   handlers = {
- *     "list_builder" = "Drupal\investigation\InvestigationListBuilder",
+ *     "list_builder" = "Drupal\decision_support\DecisionSupportListBuilder",
  *     "views_data" = "Drupal\views\EntityViewsData",
- *     "access" = "Drupal\investigation\InvestigationAccessControlHandler",
+ *     "access" = "Drupal\decision_support\DecisionSupportAccessControlHandler",
  *     "form" = {
- *       "add" = "Drupal\investigation\Form\InvestigationForm",
- *       "edit" = "Drupal\investigation\Form\InvestigationForm",
+ *       "add" = "Drupal\decision_support\Form\DecisionSupportForm",
+ *       "edit" = "Drupal\decision_support\Form\DecisionSupportForm",
  *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
  *       "delete-multiple-confirm" = "Drupal\Core\Entity\Form\DeleteMultipleForm",
  *       "revision-delete" = \Drupal\Core\Entity\Form\RevisionDeleteForm::class,
@@ -44,13 +42,13 @@ use Drupal\Core\Datetime\DateFormatterInterface;
  *       "revision" = \Drupal\Core\Entity\Routing\RevisionHtmlRouteProvider::class,
  *     },
  *   },
- *   base_table = "investigation",
- *   data_table = "investigation_field_data",
- *   revision_table = "investigation_revision",
- *   revision_data_table = "investigation_field_revision",
+ *   base_table = "decision_support",
+ *   data_table = "decision_support_field_data",
+ *   revision_table = "decision_support_revision",
+ *   revision_data_table = "decision_support_field_revision",
  *   show_revision_ui = TRUE,
  *   translatable = TRUE,
- *   admin_permission = "administer investigation",
+ *   admin_permission = "administer decision_support",
  *   entity_keys = {
  *     "id" = "id",
  *     "revision" = "revision_id",
@@ -65,21 +63,22 @@ use Drupal\Core\Datetime\DateFormatterInterface;
  *     "revision_log_message" = "revision_log",
  *   },
  *   links = {
- *     "collection" = "/admin/content/investigation",
- *     "add-form" = "/investigation/add",
- *     "canonical" = "/investigation/{investigation}",
- *     "edit-form" = "/investigation/{investigation}/edit",
- *     "delete-form" = "/investigation/{investigation}/delete",
- *     "delete-multiple-form" = "/admin/content/investigation/delete-multiple",
- *     "revision" = "/investigation/{investigation}/revision/{investigation_revision}/view",
- *     "revision-delete-form" = "/investigation/{investigation}/revision/{investigation_revision}/delete",
- *     "revision-revert-form" = "/investigation/{investigation}/revision/{investigation_revision}/revert",
- *     "version-history" = "/investigation/{investigation}/revisions",
+ *     "collection" = "/admin/content/decision-support",
+ *     "add-form" = "/decision-support/add",
+ *     "canonical" = "/decision-support/{decision_support}",
+ *     "edit-form" = "/decision-support/{decision_support}/edit",
+ *     "delete-form" = "/decision-support/{decision_support}/delete",
+ *     "delete-multiple-form" = "/admin/content/decision-support/delete-multiple",
+ *     "revision" = "/decision-support/{decision_support}/revision/{decision_support_revision}/view",
+ *     "revision-delete-form" = "/decision-support/{decision_support}/revision/{decision_support_revision}/delete",
+ *     "revision-revert-form" = "/decision-support/{decision_support}/revision/{decision_support_revision}/revert",
+ *     "version-history" = "/decision-support/{decision_support}/revisions",
  *   },
- *   field_ui_base_route = "entity.investigation.settings",
+ *   field_ui_base_route = "entity.decision_support.settings",
  * )
  */
-final class Investigation extends RevisionableContentEntityBase implements InvestigationInterface {
+
+final class DecisionSupport extends RevisionableContentEntityBase implements DecisionSupportInterface {
 
   use EntityChangedTrait;
   use EntityOwnerTrait;
@@ -104,7 +103,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
 
     $fields['label'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Name'))
-      ->setDescription(t('The name of the Investigation entity.'))
+      ->setDescription(t('The name of the Decision Support entity.'))
       ->setRevisionable(TRUE)
       ->setSettings([
         'max_length' => 50,
@@ -127,7 +126,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
 
     $fields['language'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Language'))
-      ->setDescription(t('The language of the investigation.'))
+      ->setDescription(t('The language of the decision support.'))
       ->setDisplayOptions('form', [
         'type' => 'text',
         'weight' => 0,
@@ -194,7 +193,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
 
     $fields['version'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Version'))
-      ->setDescription(t('The version of the investigation.'))
+      ->setDescription(t('The version of the decision support.'))
       ->setDisplayOptions('form', [
         'type' => 'text',
         'weight' => 0,
@@ -209,7 +208,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
 
     $fields['valid'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Validity'))
-      ->setDescription(t('The validity of the investigation.'))
+      ->setDescription(t('The validity of the decision support.'))
       ->setRevisionable(TRUE)
       ->setDefaultValue(TRUE);
 
@@ -250,7 +249,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Authored on'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the investigation was created.'))
+      ->setDescription(t('The time that the decision support was created.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -266,7 +265,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
       ->setTranslatable(TRUE)
-      ->setDescription(t('The time that the investigation was last edited.'))
+      ->setDescription(t('The time that the decision support was last edited.'))
       ->setDisplayOptions('view', [
         'label' => 'above',
         'type' => 'timestamp',
@@ -283,7 +282,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
 
   }
 
-   /**
+    /**
    * {@inheritdoc}
    */
   protected function urlRouteParameters($rel)
@@ -310,7 +309,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
   /**
    * {@inheritdoc}
    */
-  public function setName(string $name): InvestigationInterface
+  public function setName(string $name): DecisionSupportInterface
   {
     $this->set('label', $name);
     return $this;
@@ -327,7 +326,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
   /**
    * {@inheritdoc}
    */
-  public function setJsonString(string $jsonString): InvestigationInterface
+  public function setJsonString(string $jsonString): DecisionSupportInterface
   {
     $this->set('json_string', $jsonString);
     return $this;
@@ -340,7 +339,7 @@ final class Investigation extends RevisionableContentEntityBase implements Inves
     return $this->get('uid')->value;
   }
 
-  public function setUid(entity_reference $uid): InvestigationInterface
+  public function setUid(entity_reference $uid): DecisionSupportInterface
   {
     $this->set('uid', $uid);
     return $this;

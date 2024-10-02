@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\investigation\Plugin\rest\resource;
+namespace Drupal\decision_support\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,18 +14,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\investigation\Entity\Investigation;
-use Drupal\investigation\Services\InvestigationService\InvestigationService;
+use Drupal\decision_support\Entity\DecisionSupport;
+use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
- * Represents Patch Investigation records as resources.
+ * Represents get_decision_support_list records as resources.
  *
  * @RestResource (
- *   id = "patch_investigation_resource",
- *   label = @Translation("Patch Investigation"),
+ *   id = "get_decision_support_list_resource",
+ *   label = @Translation("get_decision_support_list"),
  *   uri_paths = {
- *     "canonical" = "/rest/investigation/update/{investigationId}",
- *     "patch" = "/rest/investigation/update/{investigationId}"
+ *     "canonical" = "/rest/support/list",
  *   }
  * )
  *
@@ -51,7 +50,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class PatchInvestigationResource extends ResourceBase {
+final class GetDecisionSupportListResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -69,12 +68,12 @@ final class PatchInvestigationResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    InvestigationService $investigation_service
+    DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('patch_investigation_resource');
+    $this->storage = $keyValueFactory->get('get_decision_support_list_resource');
     $this->currentUser = $currentUser;
-    $this->investigationService = $investigation_service;
+    $this->decisionSupportService = $decision_support_service;
   }
 
   /**
@@ -89,45 +88,36 @@ final class PatchInvestigationResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('investigation.service')
+      $container->get('decision_support.service')
     );
   }
-
   /**
-   * Responds to PATCH requests.
+   * Responds to GET requests.
    *
-   * @param int $investigationId
-   *   The ID of the investigation entity to update.
-   * @param array $data
-   *   The data to update the investigation entity with.
-   *
-   * @return \Drupal\rest\ModifiedResourceResponse
-   *   The modified resource response.
-   * 
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Thrown when an error occurs during the update.
+   * @return \Drupal\rest\ResourceResponse
+   *   The HTTP response object.
    */
-  public function patch($investigationId, array $data): ModifiedResourceResponse {
-
-    // Use current user after pass authentication to validate access.
+  public function get() {
+    // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
     try {
-      // Attempt to update the investigation entity.
-      $entity = $this->investigationService->updateInvestigation($investigationId,$data);
-      $this->logger->notice('The Investigation @id has been updated.', ['@id' => $investigationId]);
-      
-      // Return a response with status code 200 OK.
-      return new ModifiedResourceResponse($entity, 200);
-    } 
+      // Retrieve the list of decision.
+      $decisionSupportList = $this->decisionSupportService->getdecisionSupportList();
+      $response = new ResourceResponse($decisionSupportList);
+      $response->addCacheableDependency($this->currentUser);
+
+      return $response;
+    }
     catch (\Exception $e) {
-      // Handle any other exceptions that occur during the update.
-      $this->logger->error('An error occurred while updating Investigation: @message', ['@message' => $e->getMessage()]);
+      // Log the error message.
+      $this->logger->error('An error occurred while loading decision support list: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-
 
 }

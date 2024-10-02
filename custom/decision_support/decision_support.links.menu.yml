@@ -1,0 +1,11 @@
+entity.decision_support.settings:
+  title: 'Decision Support'
+  description: 'Configure a Decision Support entity type.'
+  route_name:  entity.decision_support.settings
+  parent: system.admin_structure
+
+entity.decision_support.collection:
+  title: 'Decision Supports'
+  description: 'List of decision supports.'
+  route_name: entity.decision_support.collection
+  parent: system.admin_content

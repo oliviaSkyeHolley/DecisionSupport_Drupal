@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\investigation\Plugin\rest\resource;
+namespace Drupal\decision_support\Plugin\rest\resource;
 
 use Drupal\Core\KeyValueStore\KeyValueFactoryInterface;
 use Drupal\Core\KeyValueStore\KeyValueStoreInterface;
@@ -14,18 +14,17 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
 use Drupal\Core\Session\AccountProxyInterface;
-use Drupal\investigation\Entity\Investigation;
-use Drupal\investigation\Services\InvestigationService\InvestigationService;
-
+use Drupal\decision_support\Entity\DecisionSupport;
+use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 /**
- * Represents Patch Investigation records as resources.
+ * Represents archive_decision_support records as resources.
  *
  * @RestResource (
- *   id = "patch_investigation_resource",
- *   label = @Translation("Patch Investigation"),
+ *   id = "archive_decision_support_resource",
+ *   label = @Translation("archive_decision_support"),
  *   uri_paths = {
- *     "canonical" = "/rest/investigation/update/{investigationId}",
- *     "patch" = "/rest/investigation/update/{investigationId}"
+ *     "canonical" = "/rest/support/archive/{decisionSupportId}",
+ *     "delete" = "/rest/support/archive/{decisionSupportId}"
  *   }
  * )
  *
@@ -51,7 +50,7 @@ use Drupal\investigation\Services\InvestigationService\InvestigationService;
  * Drupal core.
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
-final class PatchInvestigationResource extends ResourceBase {
+final class ArchiveDecisionSupportResource extends ResourceBase {
 
   /**
    * The key-value storage.
@@ -69,12 +68,12 @@ final class PatchInvestigationResource extends ResourceBase {
     LoggerInterface $logger,
     KeyValueFactoryInterface $keyValueFactory,
     AccountProxyInterface $currentUser,
-    InvestigationService $investigation_service
+    DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('patch_investigation_resource');
+    $this->storage = $keyValueFactory->get('archive_decision_support_resource');
     $this->currentUser = $currentUser;
-    $this->investigationService = $investigation_service;
+    $this->decisionSupportService = $decision_support_service;
   }
 
   /**
@@ -89,45 +88,39 @@ final class PatchInvestigationResource extends ResourceBase {
       $container->get('logger.factory')->get('rest'),
       $container->get('keyvalue'),
       $container->get('current_user'),
-      $container->get('investigation.service')
+      $container->get('decision_support.service')
     );
   }
 
-  /**
-   * Responds to PATCH requests.
+   /**
+   * Responds to DELETE requests.
    *
-   * @param int $investigationId
-   *   The ID of the investigation entity to update.
-   * @param array $data
-   *   The data to update the investigation entity with.
+   * @param string $decisionSupportId
+   *   The ID of the DecisionSupport entity to be archived.
    *
    * @return \Drupal\rest\ModifiedResourceResponse
-   *   The modified resource response.
-   * 
-   * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-   *   Thrown when an error occurs during the update.
+   *   The HTTP response object.
+   *
+   * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
+   *   Thrown when the specified entity does not exist.
    */
-  public function patch($investigationId, array $data): ModifiedResourceResponse {
-
-    // Use current user after pass authentication to validate access.
+  public function archive($decisionSupportId): ModifiedResourceResponse {
+    // Check user permission
     if (!$this->currentUser->hasPermission('access content')) {
-      throw new AccessDeniedHttpException();
-    }
-
-    try {
-      // Attempt to update the investigation entity.
-      $entity = $this->investigationService->updateInvestigation($investigationId,$data);
-      $this->logger->notice('The Investigation @id has been updated.', ['@id' => $investigationId]);
-      
-      // Return a response with status code 200 OK.
-      return new ModifiedResourceResponse($entity, 200);
-    } 
-    catch (\Exception $e) {
-      // Handle any other exceptions that occur during the update.
-      $this->logger->error('An error occurred while updating Investigation: @message', ['@message' => $e->getMessage()]);
-      throw new HttpException(500, 'Internal Server Error');
-    }
-  }
-
+       throw new AccessDeniedHttpException();
+     }
+ 
+     try {
+        // Archive the decision support entity.
+       $this->decisionSupportService->archiveDecisionSupport($decisionSupportId);
+       return new ModifiedResourceResponse(NULL, 204);
+     } 
+     catch (\Exception $e) {
+      // Log the error message.
+       $this->logger->error('An error occurred while deleting DecisionSupport entity with ID @id: @message', ['@id' => $decisionSupportId, '@message' => $e->getMessage(),]);
+       throw new HttpException(500, 'Internal Server Error');
+     }
+     return new ModifiedResourceResponse(NULL, 204);
+   }
 
 }
