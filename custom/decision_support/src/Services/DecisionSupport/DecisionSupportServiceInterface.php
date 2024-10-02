@@ -52,6 +52,18 @@ interface DecisionSupportServiceInterface {
    * @return DecisionSupport
    *   The created DecisionSupport entity.
    */
+
+  public function getDecisionSupportReport($decisionSupportReportId);
+
+  /**
+   * Creates a new DecisionSupport entity.
+   *
+   * @param array $data
+   *   The data for the new entity.
+   *
+   * @return DecisionSupportReport
+   *   The created DecisionSupport entity.
+   */
   public function createDecisionSupport(array $data);
 
   /**

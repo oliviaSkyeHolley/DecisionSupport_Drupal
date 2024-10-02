@@ -73,6 +73,8 @@ final class GetDecisionSupportReportResource extends ResourceBase {
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
     $this->storage = $keyValueFactory->get('get_decision_support_report_resource');
+    $this->currentUser = $currentUser;
+    $this->decisionSupportService = $decision_support_service;
   }
 
   /**
@@ -85,14 +87,42 @@ final class GetDecisionSupportReportResource extends ResourceBase {
       $plugin_definition,
       $container->getParameter('serializer.formats'),
       $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue')
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('decision_support.service')
     );
   }
 
   /**
    * Responds to GET requests.
    */
-  public function get($id): ResourceResponse {
+  public function get($decisionSupportReportId): JsonResponse
+  {
+
+    // Check user permissions.
+    if (!$this->currentUser->hasPermission('access content')) {
+      throw new AccessDeniedHttpException();
+    }
+
+    try {
+      // Retrieve the decision support data.
+      $decisionSupportReportJsonString = $this->decisionSupportService->getDecisionSupportReport($decisionSupportReportId);
+
+      // Return the JSON response.
+      return new JsonResponse($decisionSupportReportJsonString, 200, [], true);
+    }
+    catch (\Exception $e) {
+      // Log the error message.
+      $this->logger->error('An error occurred while loading DecisionSupportReport: @message', ['@message' => $e->getMessage()]);
+
+      // Throw a generic HTTP exception for internal server errors.
+      throw new HttpException(500, 'Internal Server Error');
+    }
+  }
+
+}
+
+/*
     if (!$this->storage->has($id)) {
       throw new NotFoundHttpException();
     }
@@ -104,7 +134,7 @@ final class GetDecisionSupportReportResource extends ResourceBase {
   /**
    * {@inheritdoc}
    */
-  protected function getBaseRoute($canonical_path, $method): Route {
+ /* protected function getBaseRoute($canonical_path, $method): Route {
     $route = parent::getBaseRoute($canonical_path, $method);
     // Set ID validation pattern.
     if ($method !== 'POST') {
@@ -116,9 +146,10 @@ final class GetDecisionSupportReportResource extends ResourceBase {
   /**
    * Returns next available ID.
    */
-  private function getNextId(): int {
+ /* private function getNextId(): int {
     $ids = \array_keys($this->storage->getAll());
     return count($ids) > 0 ? max($ids) + 1 : 1;
   }
 
 }
+*/
