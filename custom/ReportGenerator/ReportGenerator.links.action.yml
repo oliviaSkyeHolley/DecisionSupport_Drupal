@@ -1,5 +1,0 @@
-ReportGenerator.add_form:
-  title: 'generate report'
-  route_name: entity.ReportGenerator.add_form
-  appears_on:
-    - entity.ReportGenerator.collection
