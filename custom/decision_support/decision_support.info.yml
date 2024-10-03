@@ -1,0 +1,5 @@
+name: 'Decision Support'
+type: module
+description: 'Contains instances of Decision Support based off of a process.'
+package: 'CS321'
+core_version_requirement: ^10
