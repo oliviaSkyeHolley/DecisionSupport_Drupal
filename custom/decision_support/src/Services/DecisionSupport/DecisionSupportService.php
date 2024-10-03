@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\decision_support\Services\DecisionSupport;
 
-use Drupal\decisionSupport\Entity\DecisionSupport;
+use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\process\Entity\Process;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Psr\Log\LoggerInterface;
