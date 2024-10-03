@@ -62,7 +62,7 @@ interface DecisionSupportServiceInterface {
    *   The data for the new entity.
    *
    * @return DecisionSupportReport
-   *   The created DecisionSupport entity.
+   *   The created DecisionSupportReport entity.
    */
   public function createDecisionSupport(array $data);
 
