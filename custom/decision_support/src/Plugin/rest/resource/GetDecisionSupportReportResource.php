@@ -80,4 +80,38 @@ final class GetDecisionSupportReportResource extends ResourceBase {
       throw new HttpException(500, 'Internal Server Error');
     }
   }
+
+  /* sift through json file and get relevant data for the report */
+  public function addReport($decisionSupportId){
+    $report_json = $this->get($decisionSupportId);
+    $questionNumber = $report_json['id'];
+    $question = $report_json['description'];
+    $answerCode = $report_json['answer'];
+    $textAnswer = $report_json['textAnswer'];
+
+    /*need to figure out how I can compare there answer
+    with the choices to figure out if I should return
+    yes or no*/
+
+    $choices = $report_json['choiceUuid'];
+
+    foreach($choices as $choice){
+      if($answerCode == $choice){
+        $answer = $choice;
+      }
+    }
+/*
+    $questionString =  'Question: '. $questionNumber. ' - '. $question;
+    $answerString = 'Answer: '. $answer;
+    $additionalInformation = 'Additional Information: '. $textAnswer;
+*/
+
+
+    /* call the class that outputs this infomation */
+
+    echo 'Question: '. $questionNumber. ' - '. $question;
+    echo 'Answer: '. $choice;
+    echo 'Additional Information: '. $textAnswer;
+  }
+
 }
