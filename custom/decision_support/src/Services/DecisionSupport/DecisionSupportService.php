@@ -65,7 +65,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function getdecisionSupportReportList() {
+  public function getDecisionSupportReportList() {
 
     $unformattedDecisionSupportReport = DecisionSupportReport::loadMultiple();
     $decisionSupportReportList = array();
@@ -73,10 +73,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       if ($unformattedDecisionSupportReport instanceof DecisionSupportReport) {
         $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
         $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
-        $decisionSupportReport['revisionId'] = $unformattedDecisionSupportReport->getRevisionId();
-        $decisionSupportReport['createdTime'] = $unformattedDecisionSupportReport->getCreatedTime();
         $decisionSupportReport['updatedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
-        $decisionSupportReport['revisionStatus'] = $unformattedDecisionSupportReport->getRevisionStatus();
         $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
 
         $decisionSupportReportList[] = $decisionSupportReport;
@@ -90,15 +87,16 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDecisionSupportReport($decisionSupportReportId) {
+  public function getDecisionSupportReport($decisionSupportId) {
 
-    $decisionSupportReport = DecisionSupport::load($decisionSupportReportId);
-    if (!$decisionSupportReport) {
-      throw new NotFoundHttpException(sprintf('DecisionSupportSupport with ID %s was not found.', $decisionSupportReportId));
+    $decisionSupport = DecisionSupport::load($decisionSupportId);
+    if (!$decisionSupport) {
+      throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
-    $decisionSupportReortJsonString = $decisionSupportReport->getJsonString();
+    $decisionSupportJsonString = $decisionSupport->getJsonString();
 
-    return $decisionSupportReortJsonString;
+    return $decisionSupportJsonString;
+
   }
 
 

@@ -16,17 +16,16 @@ use Symfony\Component\Routing\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\decision_support\Entity\DecisionSupport;
-use Drupal\decision_support\Services\DecisionSupportService\DecisionSupportService;
+use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
- * Represents get_decision_support_report records as resources.
+ * Represents Decision Support Get records as resources.
  *
  * @RestResource (
- *   id = "get_decision_support_report_resource",
- *   label = @Translation("get_decision_support_report"),
+ *   id = "get_decision_support_report",
+ *   label = @Translation("Decision Support Report Get"),
  *   uri_paths = {
- *     "canonical" = "/api/get-decision-support-report-resource/{id}",
- *     "create" = "/api/get-decision-support-report-resource"
+ *     "canonical" = "/rest/support/report/{decisionSupportId}",
  *   }
  * )
  *
@@ -54,103 +53,31 @@ use Drupal\decision_support\Services\DecisionSupportService\DecisionSupportServi
  */
 final class GetDecisionSupportReportResource extends ResourceBase {
 
-  /**
-   * The key-value storage.
-   */
-  private readonly KeyValueStoreInterface $storage;
 
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    array $serializer_formats,
-    LoggerInterface $logger,
-    KeyValueFactoryInterface $keyValueFactory,
-    AccountProxyInterface $currentUser,
-    DecisionSupportService $decision_support_service
-  ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('get_decision_support_report_resource');
-    $this->currentUser = $currentUser;
-    $this->decisionSupportService = $decision_support_service;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): self {
-    return new self(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->getParameter('serializer.formats'),
-      $container->get('logger.factory')->get('rest'),
-      $container->get('keyvalue'),
-      $container->get('current_user'),
-      $container->get('decision_support.service')
-    );
-  }
 
   /**
    * Responds to GET requests.
    */
-  public function get($decisionSupportReportId): JsonResponse
+  public function get($decisionSupportId): JsonResponse
   {
-
     // Check user permissions.
     if (!$this->currentUser->hasPermission('access content')) {
       throw new AccessDeniedHttpException();
     }
 
     try {
-      // Retrieve the decision support report data.
-      $decisionSupportReportJsonString = $this->decisionSupportService->getDecisionSupportReport($decisionSupportReportId);
+      // Retrieve the decision support data.
+      $decisionSupportJsonString = $this->decisionSupportService->getDecisionSupport($decisionSupportId);
 
       // Return the JSON response.
-      return new JsonResponse($decisionSupportReportJsonString, 200, [], true);
+      return new JsonResponse($decisionSupportJsonString, 200, [], true);
     }
     catch (\Exception $e) {
       // Log the error message.
-      $this->logger->error('An error occurred while loading DecisionSupportReport: @message', ['@message' => $e->getMessage()]);
+      $this->logger->error('An error occurred while loading DecisionSupport: @message', ['@message' => $e->getMessage()]);
 
       // Throw a generic HTTP exception for internal server errors.
       throw new HttpException(500, 'Internal Server Error');
     }
   }
-
 }
-
-/*
-    if (!$this->storage->has($id)) {
-      throw new NotFoundHttpException();
-    }
-    $resource = $this->storage->get($id);
-    return new ResourceResponse($resource);
-  }
-
-
-  /**
-   * {@inheritdoc}
-   */
- /* protected function getBaseRoute($canonical_path, $method): Route {
-    $route = parent::getBaseRoute($canonical_path, $method);
-    // Set ID validation pattern.
-    if ($method !== 'POST') {
-      $route->setRequirement('id', '\d+');
-    }
-    return $route;
-  }
-
-  /**
-   * Returns next available ID.
-   */
- /* private function getNextId(): int {
-    $ids = \array_keys($this->storage->getAll());
-    return count($ids) > 0 ? max($ids) + 1 : 1;
-  }
-
-}
-*/
