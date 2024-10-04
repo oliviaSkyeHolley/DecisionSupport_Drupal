@@ -65,6 +65,46 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
   /**
    * {@inheritdoc}
    */
+  public function getdecisionSupportReportList() {
+
+    $unformattedDecisionSupportReport = DecisionSupportReport::loadMultiple();
+    $decisionSupportReportList = array();
+    foreach ($unformattedDecisionSupportReport as $unformattedDecisionSupportReport) {
+      if ($unformattedDecisionSupportReport instanceof DecisionSupportReport) {
+        $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
+        $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
+        $decisionSupportReport['revisionId'] = $unformattedDecisionSupportReport->getRevisionId();
+        $decisionSupportReport['createdTime'] = $unformattedDecisionSupportReport->getCreatedTime();
+        $decisionSupportReport['updatedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
+        $decisionSupportReport['revisionStatus'] = $unformattedDecisionSupportReport->getRevisionStatus();
+        $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
+
+        $decisionSupportReportList[] = $decisionSupportReport;
+        unset($decisionSupportReport);
+      }
+    }
+
+    return $decisionSupportReportList;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDecisionSupportReport($decisionSupportReportId) {
+
+    $decisionSupportReport = DecisionSupport::load($decisionSupportReportId);
+    if (!$decisionSupportReport) {
+      throw new NotFoundHttpException(sprintf('DecisionSupportSupport with ID %s was not found.', $decisionSupportReportId));
+    }
+    $decisionSupportReortJsonString = $decisionSupportReport->getJsonString();
+
+    return $decisionSupportReortJsonString;
+  }
+
+
+  /**
+   * {@inheritdoc}
+   */
   public function getDecisionSupport($decisionSupportId) {
 
     $decisionSupport = DecisionSupport::load($decisionSupportId);
@@ -119,7 +159,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $json_string = json_encode($data);
     $decisionSupport->setJsonString($json_string);
     $entity=$decisionSupport->save();
-    
+
     return $entity;
   }
 
@@ -133,7 +173,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
-    
+
     $decisionSupport->delete();
 
     $this->logger->notice('Moved DecisionSupport with ID @id to archived.', ['@id' => $decisionSupportId]);
