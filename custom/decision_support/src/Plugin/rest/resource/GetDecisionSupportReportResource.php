@@ -13,6 +13,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupportService\DecisionSupportService;
@@ -105,7 +106,7 @@ final class GetDecisionSupportReportResource extends ResourceBase {
     }
 
     try {
-      // Retrieve the decision support data.
+      // Retrieve the decision support report data.
       $decisionSupportReportJsonString = $this->decisionSupportService->getDecisionSupportReport($decisionSupportReportId);
 
       // Return the JSON response.
