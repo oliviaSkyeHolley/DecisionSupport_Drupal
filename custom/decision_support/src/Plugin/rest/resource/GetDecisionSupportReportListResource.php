@@ -18,13 +18,13 @@ use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
- * Represents Decision Support Get List records as resources.
+ * Represents Decision Support Report Get List records as resources.
  *
  * @RestResource (
- *   id = "get_decision_support_list",
- *   label = @Translation("Decision Support Get List"),
+ *   id = "get_decision_support_report_list",
+ *   label = @Translation("Decision Support Report Get List"),
  *   uri_paths = {
- *     "canonical" = "/rest/support/list",
+ *     "canonical" = "/rest/support/reportlist",
  *   }
  * )
  *
@@ -71,7 +71,7 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
     DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('decision_support_get_list');
+    $this->storage = $keyValueFactory->get('decision_support_report_get_list');
     $this->currentUser = $currentUser;
     $this->decisionSupportService = $decision_support_service;
   }
@@ -105,15 +105,15 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
 
     try {
       // Retrieve the list of decision.
-      $decisionSupportList = $this->decisionSupportService->getdecisionSupportList();
-      $response = new ResourceResponse($decisionSupportList);
+      $decisionSupportReportList = $this->decisionSupportService->getdecisionSupportReportList();
+      $response = new ResourceResponse($decisionSupportReportList);
       $response->addCacheableDependency($this->currentUser);
 
       return $response;
     }
     catch (\Exception $e) {
       // Log the error message.
-      $this->logger->error('An error occurred while loading decision support list: @message', ['@message' => $e->getMessage()]);
+      $this->logger->error('An error occurred while loading decision support report list: @message', ['@message' => $e->getMessage()]);
 
       // Throw a generic HTTP exception for internal server errors.
       throw new HttpException(500, 'Internal Server Error');

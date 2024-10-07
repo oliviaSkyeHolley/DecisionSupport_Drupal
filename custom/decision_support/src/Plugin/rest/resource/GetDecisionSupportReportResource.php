@@ -19,7 +19,7 @@ use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
 
 /**
- * Represents Decision Support Get records as resources.
+ * Represents Decision Support report Get records as resources.
  *
  * @RestResource (
  *   id = "get_decision_support_report",
@@ -52,6 +52,47 @@ use Drupal\decision_support\Services\DecisionSupport\DecisionSupportService;
  * @see \Drupal\rest\Plugin\rest\resource\EntityResource
  */
 final class GetDecisionSupportReportResource extends ResourceBase {
+
+
+  /**
+   * The key-value storage.
+   */
+  private readonly KeyValueStoreInterface $storage;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function __construct(
+    array $configuration,
+          $plugin_id,
+          $plugin_definition,
+    array $serializer_formats,
+    LoggerInterface $logger,
+    KeyValueFactoryInterface $keyValueFactory,
+    AccountProxyInterface $currentUser,
+    DecisionSupportService $decision_support_service
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
+    $this->storage = $keyValueFactory->get('get_decision_support');
+    $this->currentUser = $currentUser;
+    $this->decisionSupportService = $decision_support_service;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): self {
+    return new self(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->getParameter('serializer.formats'),
+      $container->get('logger.factory')->get('rest'),
+      $container->get('keyvalue'),
+      $container->get('current_user'),
+      $container->get('decision_support.service')
+    );
+  }
 
 
 
