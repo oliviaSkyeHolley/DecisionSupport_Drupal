@@ -71,7 +71,7 @@ final class GetDecisionSupportReportListResource extends ResourceBase {
     DecisionSupportService $decision_support_service
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $serializer_formats, $logger);
-    $this->storage = $keyValueFactory->get('decision_support_report_get_list');
+    $this->storage = $keyValueFactory->get('get_decision_support_report_list');
     $this->currentUser = $currentUser;
     $this->decisionSupportService = $decision_support_service;
   }
