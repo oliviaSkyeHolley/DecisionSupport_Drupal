@@ -96,6 +96,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       'processId' =>$data['decisionSupport_id'],
       'processLabel' => $decisionSupport->getName(),
       'steps'=> $processData['steps'],
+      'isCompleted' => false,
     ];
     $decisionSupportJsonstring = json_encode($jsonstring);
     $decisionSupport->setJsonString($decisionSupportJsonstring);
