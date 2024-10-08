@@ -29,7 +29,31 @@ interface DecisionSupportServiceInterface {
  * @return string
  *   The JSON representation of the DecisionSupport entity.
  */
+
+  public function getDecisionSupportReportList();
+
+  /**
+   * Get a DecisionSupport by ID.
+   *
+   * @param int $decisionSupportReportId
+   *   The ID of the decisionSupport entity to retrieve.
+   *
+   * @return string
+   *   The JSON representation of the DecisionSupport entity.
+   */
   public function getDecisionSupport($decisionSupportId);
+
+  /**
+   * Creates a new DecisionSupport entity.
+   *
+   * @param array $data
+   *   The data for the new entity.
+   *
+   * @return DecisionSupport
+   *   The created DecisionSupport entity.
+   */
+
+  public function getDecisionSupportReport($decisionSupportId);
 
   /**
    * Creates a new DecisionSupport entity.

@@ -221,6 +221,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
       ->setRevisionable(TRUE)
       ->setDefaultValue(TRUE);
 
+
     $fields['json_string'] = BaseFieldDefinition::create('string_long')
       ->setLabel(t('JSON String'))
       ->setDescription(t('The JSON String.'))
