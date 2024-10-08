@@ -108,10 +108,11 @@ final class GetDecisionSupportReportResource extends ResourceBase {
 
     try {
       // Retrieve the decision support data.
-      $decisionSupportJsonString = $this->decisionSupportService->getDecisionSupport($decisionSupportId);
+      $decisionSupportReportJsonString = $this->decisionSupportService->getDecisionSupportReport($decisionSupportId);
 
       // Return the JSON response.
-      return new JsonResponse($decisionSupportJsonString, 200, [], true);
+      //return new JsonResponse($decisionSupportJsonString, 200, [], true);
+      return new JsonResponse($decisionSupportReportJsonString, 200, [], true);
     }
     catch (\Exception $e) {
       // Log the error message.
@@ -143,7 +144,7 @@ final class GetDecisionSupportReportResource extends ResourceBase {
     }
 /*
     $questionString =  'Question: '. $questionNumber. ' - '. $question;
-    $answerString = 'Answer: '. $answer;
+    $answerString = 'Answer: '. $choice;
     $additionalInformation = 'Additional Information: '. $textAnswer;
 */
 

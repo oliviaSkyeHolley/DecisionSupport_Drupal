@@ -95,7 +95,21 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     }
     $decisionSupportJsonString = $decisionSupport->getJsonString();
 
-    return $decisionSupportJsonString;
+    /*my working p4 */
+  $jsonData = json_decode($decisionSupportJsonString, true);
+
+  $reportData = array();
+
+  foreach ($jsonData['steps'] as &$step){
+    $data['id'] = $step['id'];
+    $data['description'] = $step['description'];
+    $data['answerLabel'] = $step['answerLabel'];
+    $data['textAnswer'] = $step['textAnswer'];
+    $reportData[]= $data;
+  }
+
+  $reportJson = json_encode($reportData);
+  return $reportJson;
 
   }
 
