@@ -411,7 +411,17 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
     return $formatted_date;
   }
 
-    /**
+  public function getprocessLabel(): string
+  {
+    $json = $this->get('json_string')->value ?? '';
+    $jsonData = json_decode($json, true);
+
+    $processLabel = $jsonData['processLabel'];
+
+    return $processLabel;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function getIsCompleted(): bool {
