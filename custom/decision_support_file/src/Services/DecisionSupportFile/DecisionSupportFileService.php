@@ -42,7 +42,6 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
    * {@inheritdoc}
    */
   public function getDecisionSupportFile($decisionSupportId){
-
     // Create an entity query for the decision_support_file entity.
     $query = $this->entityTypeManager
       ->getStorage('decision_support_file') // Get the storage handler.
@@ -51,7 +50,12 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
       ->condition('decisionSupportId', $decisionSupportId) // Add condition for matching decisionSupportId.
      ->accessCheck(TRUE); // Enable access checks.
 
+    
     $decisionSupportFileIds = $query->execute();
+    $this->logger->info('Query result for Decision Support Id: {id}, File IDs: {file_ids}', [
+      'id' => $decisionSupportId,
+      'file_ids' => json_encode($decisionSupportFileIds)
+    ]);
     $unformattedDecisionSupportFile = DecisionSupportFile::loadMultiple($decisionSupportFileIds);
     $decisionSupportFileList = array();
 

@@ -111,7 +111,7 @@ final class ArchiveDecisionSupportFileResource extends ResourceBase {
     
         try {
          // Attempt to update the decision support file entity.
-         $entity = $this->decisionSupportFileService->archiveDecisionSupportFile($fileId);
+         $entity = $this->decisionSupportFileService->deleteDecisionSupportFile($fileId);
          $this->logger->notice('The Decision Support File @id has been moved to Archived.', ['@id' => $fileId]);
          
          // Return a response with status code 200 OK.
