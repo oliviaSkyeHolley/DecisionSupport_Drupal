@@ -84,9 +84,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
 
     $processId = $data['process_id'];
     $process = Process::load($processId);
-    $processJson = $process->getJsonString();
-    $processData = json_decode($processJson, true);
-
+    
     $decisionSupport = DecisionSupport::create($data);
     $entityId = $decisionSupport->save();
     $returnValue['entityId'] = $decisionSupport->id();
@@ -94,8 +92,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       'entityId' =>$decisionSupport->id(),
       'uuid'=>uniqid(),
       'decisionSupportLabel' =>$decisionSupport->label(),
-      'processId' =>$data['decisionSupport_id'],
-      'processLabel' => $decisionSupport->getName(),
+      'processId' =>$data['process_id'],
+      'processLabel' => $process->getLabel(),
       'steps'=> $processData['steps'],
       'isCompleted' =>  $decisionSupport->getIsCompleted() ,
     ];
