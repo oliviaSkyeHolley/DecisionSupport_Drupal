@@ -52,6 +52,8 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
         $decisionSupport['createdTime'] = $unformattedDecisionSupport->getCreatedTime();
         $decisionSupport['updatedTime'] = $unformattedDecisionSupport->getupdatedTime();
         $decisionSupport['revisionStatus'] = $unformattedDecisionSupport->getRevisionStatus();
+        $decisionSupport['processLabel'] = $unformattedDecisionSupport->getProcessLabel();
+        $decisionSupport['isCompleted'] = $unformattedDecisionSupport->getIsCompleted();
         $decisionSupport['json_string'] = $unformattedDecisionSupport->getJsonString();
 
         $decisionSupportList[] = $decisionSupport;
@@ -137,7 +139,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $process = Process::load($processId);
     $processJson = $process->getJsonString();
     $processData = json_decode($processJson, true);
-
+    
     $decisionSupport = DecisionSupport::create($data);
     $entityId = $decisionSupport->save();
     $returnValue['entityId'] = $decisionSupport->id();
@@ -145,9 +147,10 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       'entityId' =>$decisionSupport->id(),
       'uuid'=>uniqid(),
       'decisionSupportLabel' =>$decisionSupport->label(),
-      'processId' =>$data['decisionSupport_id'],
-      'processLabel' => $decisionSupport->getName(),
+      'processId' =>$data['process_id'],
+      'processLabel' => $process->getLabel(),
       'steps'=> $processData['steps'],
+      'isCompleted' =>  $decisionSupport->getIsCompleted() ,
     ];
     $decisionSupportJsonstring = json_encode($jsonstring);
     $decisionSupport->setJsonString($decisionSupportJsonstring);
