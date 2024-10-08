@@ -52,6 +52,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
         $decisionSupport['createdTime'] = $unformattedDecisionSupport->getCreatedTime();
         $decisionSupport['updatedTime'] = $unformattedDecisionSupport->getupdatedTime();
         $decisionSupport['revisionStatus'] = $unformattedDecisionSupport->getRevisionStatus();
+        $decisionSupport['processLabel'] = $unformattedDecisionSupport->getProcessLabel();
         $decisionSupport['isCompleted'] = $unformattedDecisionSupport->getIsCompleted();
         $decisionSupport['json_string'] = $unformattedDecisionSupport->getJsonString();
 
