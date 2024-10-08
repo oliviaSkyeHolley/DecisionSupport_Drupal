@@ -189,6 +189,16 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
         ],
       ])
       ->setDisplayConfigurable('view', TRUE);
+    
+       $fields['completed'] = BaseFieldDefinition::create('boolean')
+      ->setLabel(t('Completed'))
+      ->setDefaultValue(TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'boolean_checkbox',
+        'weight' => -2,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['version'] = BaseFieldDefinition::create('string')
       ->setLabel(t('Version'))
@@ -399,6 +409,21 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
     //format the timestamp to a  date/time
     $formatted_date = $date_formatter->format($timestamp);
     return $formatted_date;
+  }
+
+    /**
+   * {@inheritdoc}
+   */
+  public function getIsCompleted(): bool {
+    return (bool) $this->get('completed')->value;
+  }
+  
+  /**
+   * {@inheritdoc}
+   */
+  public function setIsCompleted(bool $completed): self {
+    $this->set('completed', $completed);
+    return $this;
   }
 
 }
