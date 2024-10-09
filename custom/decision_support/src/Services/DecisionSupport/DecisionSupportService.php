@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\decision_support\Services\DecisionSupport;
 
+use Drupal\Component\Render\MarkupInterface;
 use Drupal\decision_support\Entity\DecisionSupport;
 use Drupal\process\Entity\Process;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -106,11 +107,14 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $data['id'] = $step['id'];
     $data['description'] = $step['description'];
     $data['answerLabel'] = $step['answerLabel'];
-    $data['textAnswer'] = $step['textAnswer'];
+    $data['textAnswer'] = strip_tags($step['textAnswer']);
     $reportData[]= $data;
   }
 
   $reportJson = json_encode($reportData);
+
+  //$reportJson = strip_tags($reportJson);
+
   return $reportJson;
 
   }
@@ -139,7 +143,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $process = Process::load($processId);
     $processJson = $process->getJsonString();
     $processData = json_decode($processJson, true);
-    
+
     $decisionSupport = DecisionSupport::create($data);
     $entityId = $decisionSupport->save();
     $returnValue['entityId'] = $decisionSupport->id();
