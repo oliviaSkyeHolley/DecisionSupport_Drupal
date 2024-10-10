@@ -134,6 +134,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     return $decisionSupportJsonString;
   }
 
+
   /**
    * {@inheritdoc}
    */
