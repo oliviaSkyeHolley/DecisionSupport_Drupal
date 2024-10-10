@@ -105,7 +105,7 @@ final class GetDecisionSupportListResource extends ResourceBase {
 
     try {
       // Retrieve the list of decision.
-      $decisionSupportList = $this->decisionSupportService->getdecisionSupportList();
+      $decisionSupportList = $this->decisionSupportService->getDecisionSupportList();
       $response = new ResourceResponse($decisionSupportList);
       $response->addCacheableDependency($this->currentUser);
 

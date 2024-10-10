@@ -177,6 +177,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     }
     $json_string = json_encode($data);
     $decisionSupport->setJsonString($json_string);
+    $decisionSupport->setName($data['decisionSupportLabel']);
     $entity=$decisionSupport->save();
 
     return $entity;
