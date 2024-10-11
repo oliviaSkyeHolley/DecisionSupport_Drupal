@@ -126,14 +126,14 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       });
 
       // Add the attached files to the step data.
-      $stepData['attachedFiles'] = array_map(function($file) {
+      $stepData['attachedFiles'] = array_values(array_map(function($file) {
         return [
           'label' => $file['label'],
           'entityId' => $file['entityId'],
           'fileEntityId' => $file['fileEntityId'],
           'isVisible' => $file['isVisible'],
         ];
-      }, $stepFiles);
+      }, $stepFiles));
      
       $stepsData[]= $stepData;
     }
