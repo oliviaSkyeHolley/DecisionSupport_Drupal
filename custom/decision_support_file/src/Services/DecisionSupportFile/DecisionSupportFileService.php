@@ -61,14 +61,16 @@ final class DecisionSupportFileService implements DecisionSupportFileServiceInte
 
         foreach ($unformattedDecisionSupportFile as $unformattedDecisionSupportFile) {
           if ($unformattedDecisionSupportFile instanceof DecisionSupportFile) {
-            $file['label'] = $unformattedDecisionSupportFile->getLabel();
-            $file['entityId'] = $unformattedDecisionSupportFile->id();
-            $file['stepId'] = $unformattedDecisionSupportFile->getStepId();
-            $file['fileEntityId'] = $unformattedDecisionSupportFile->getFileId();
-            $file['isVisible'] = $unformattedDecisionSupportFile->getVisible();
+            if($unformattedDecisionSupportFile->getVisible()){
+              $file['label'] = $unformattedDecisionSupportFile->getLabel();
+              $file['entityId'] = $unformattedDecisionSupportFile->id();
+              $file['stepId'] = $unformattedDecisionSupportFile->getStepId();
+              $file['fileEntityId'] = $unformattedDecisionSupportFile->getFileId();
+              $file['isVisible'] = $unformattedDecisionSupportFile->getVisible();
 
-            $decisionSupportFileList[] = $file;
-            unset($file);
+              $decisionSupportFileList[] = $file;
+              unset($file);
+            }
           }
         }
 

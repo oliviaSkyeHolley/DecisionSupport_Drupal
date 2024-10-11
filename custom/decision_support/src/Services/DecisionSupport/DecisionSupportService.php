@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+
 /**
  * @todo Add class description.
  */
@@ -47,18 +48,20 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $decisionSupportList = array();
     foreach ($unformattedDecisionSupport as $unformattedDecisionSupport) {
       if ($unformattedDecisionSupport instanceof DecisionSupport) {
-        $decisionSupport['label'] = $unformattedDecisionSupport->getName();
-        $decisionSupport['entityId'] = $unformattedDecisionSupport->id();
-        $decisionSupport['revisionId'] = $unformattedDecisionSupport->getRevisionId();
-        $decisionSupport['createdTime'] = $unformattedDecisionSupport->getCreatedTime();
-        $decisionSupport['updatedTime'] = $unformattedDecisionSupport->getupdatedTime();
-        $decisionSupport['revisionStatus'] = $unformattedDecisionSupport->getRevisionStatus();
-        $decisionSupport['processLabel'] = $unformattedDecisionSupport->getProcessLabel();
-        $decisionSupport['isCompleted'] = $unformattedDecisionSupport->getIsCompleted();
-        $decisionSupport['json_string'] = $unformattedDecisionSupport->getJsonString();
+        if(!$unformattedDecisionSupport -> getIsCompleted()) {
+          $decisionSupport['label'] = $unformattedDecisionSupport->getName();
+          $decisionSupport['entityId'] = $unformattedDecisionSupport->id();
+          $decisionSupport['revisionId'] = $unformattedDecisionSupport->getRevisionId();
+          $decisionSupport['createdTime'] = $unformattedDecisionSupport->getCreatedTime();
+          $decisionSupport['updatedTime'] = $unformattedDecisionSupport->getupdatedTime();
+          $decisionSupport['revisionStatus'] = $unformattedDecisionSupport->getRevisionStatus();
+          $decisionSupport['processLabel'] = $unformattedDecisionSupport->getProcessLabel();
+          $decisionSupport['isCompleted'] = $unformattedDecisionSupport->getIsCompleted();
+          $decisionSupport['json_string'] = $unformattedDecisionSupport->getJsonString();
 
-        $decisionSupportList[] = $decisionSupport;
-        unset($decisionSupport);
+          $decisionSupportList[] = $decisionSupport;
+          unset($decisionSupport);
+        }
       }
     }
 
@@ -69,18 +72,19 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    * {@inheritdoc}
    */
   public function getDecisionSupportReportList() {
-
-    $unformattedDecisionSupportReport = DecisionSupportReport::loadMultiple();
+    $unformattedDecisionSupportReport = DecisionSupport::loadMultiple();
     $decisionSupportReportList = array();
     foreach ($unformattedDecisionSupportReport as $unformattedDecisionSupportReport) {
-      if ($unformattedDecisionSupportReport instanceof DecisionSupportReport) {
-        $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
-        $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
-        $decisionSupportReport['updatedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
-        $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
+      if ($unformattedDecisionSupportReport instanceof DecisionSupport) {
+        if ($unformattedDecisionSupportReport->getIsCompleted()){
+          $decisionSupportReport['label'] = $unformattedDecisionSupportReport->getName();
+          $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
+          $decisionSupportReport['updatedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
+          $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
 
-        $decisionSupportReportList[] = $decisionSupportReport;
-        unset($decisionSupportReport);
+          $decisionSupportReportList[] = $decisionSupportReport;
+          unset($decisionSupportReport);
+        }
       }
     }
 
@@ -92,30 +96,52 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
    */
   public function getDecisionSupportReport($decisionSupportId) {
 
+    $decisionSupportFileService = \Drupal::service('decision_support_file.service');
     $decisionSupport = DecisionSupport::load($decisionSupportId);
     if (!$decisionSupport) {
       throw new NotFoundHttpException(sprintf('DecisionSupport with ID %s was not found.', $decisionSupportId));
     }
     $decisionSupportJsonString = $decisionSupport->getJsonString();
 
+   
+
     /*my working p4 */
-  $jsonData = json_decode($decisionSupportJsonString, true);
+    $jsonData = json_decode($decisionSupportJsonString, true);
 
-  $reportData = array();
+    $reportData = array();
 
-  foreach ($jsonData['steps'] as &$step){
-    $data['id'] = $step['id'];
-    $data['description'] = $step['description'];
-    $data['answerLabel'] = $step['answerLabel'];
-    $data['textAnswer'] = strip_tags($step['textAnswer']);
-    $reportData[]= $data;
-  }
+    foreach ($jsonData['steps'] as &$step){
+      $data['id'] = $step['id'];
+      $data['description'] = $step['description'];
+      $data['answerLabel'] = $step['answerLabel'];
+      $data['textAnswer'] = strip_tags($step['textAnswer']);
 
-  $reportJson = json_encode($reportData);
+      // Fetch DecisionSupportFile entities for the step (by stepId).
+      
+      $files = $decisionSupportFileService->getDecisionSupportFile($decisionSupportId);
+      //$this->logger->debug('Fetched files: @files', ['@files' => print_r($files, true)]);
+      
+      // Filter the files to match the current step.
+      $stepFiles = array_filter($files, function($file) use ($step) {
+        return $file['stepId'] == $step['id'];
+      });
 
-  //$reportJson = strip_tags($reportJson);
+      // Add the attached files to the step data.
+      $data['attachedFiles'] = array_map(function($file) {
+        return [
+          'label' => $file['label'],
+          'entityId' => $file['entityId'],
+          'fileEntityId' => $file['fileEntityId'],
+          'isVisible' => $file['isVisible'],
+        ];
+      }, $stepFiles);
 
-  return $reportJson;
+      $reportData[]= $data;
+    }
+
+    $reportJson = json_encode($reportData);
+
+    return $reportJson;
 
   }
 
@@ -147,6 +173,9 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
 
     $decisionSupport = DecisionSupport::create($data);
     $entityId = $decisionSupport->save();
+
+    $decisionSupport->setIsCompleted(false);
+
     $returnValue['entityId'] = $decisionSupport->id();
     $jsonstring = [
       'entityId' =>$decisionSupport->id(),
@@ -179,6 +208,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $json_string = json_encode($data);
     $decisionSupport->setJsonString($json_string);
     $decisionSupport->setName($data['decisionSupportLabel']);
+    $decisionSupport->setIsCompleted($data['isCompleted']);
     $entity=$decisionSupport->save();
 
     return $entity;

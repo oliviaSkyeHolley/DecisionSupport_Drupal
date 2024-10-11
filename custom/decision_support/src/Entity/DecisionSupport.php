@@ -192,7 +192,7 @@ final class DecisionSupport extends RevisionableContentEntityBase implements Dec
     
        $fields['completed'] = BaseFieldDefinition::create('boolean')
       ->setLabel(t('Completed'))
-      ->setDefaultValue(TRUE)
+      ->setDefaultValue(FALSE)
       ->setDisplayOptions('form', [
         'type' => 'boolean_checkbox',
         'weight' => -2,
