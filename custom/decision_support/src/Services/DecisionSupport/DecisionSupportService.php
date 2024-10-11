@@ -109,17 +109,16 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
     $jsonData = json_decode($decisionSupportJsonString, true);
 
     $reportData = array();
-
+    $stepsData = [];
     foreach ($jsonData['steps'] as &$step){
-      $data['id'] = $step['id'];
-      $data['description'] = $step['description'];
-      $data['answerLabel'] = $step['answerLabel'];
-      $data['textAnswer'] = strip_tags($step['textAnswer']);
-
+      $stepData['step']= [
+      'id' => $step['id'],
+      'description' => $step['description'],
+      'answerLabel' => $step['answerLabel'],
+      'textAnswer' => strip_tags($step['textAnswer']),
+      ];
       // Fetch DecisionSupportFile entities for the step (by stepId).
-      
       $files = $decisionSupportFileService->getDecisionSupportFile($decisionSupportId);
-      //$this->logger->debug('Fetched files: @files', ['@files' => print_r($files, true)]);
       
       // Filter the files to match the current step.
       $stepFiles = array_filter($files, function($file) use ($step) {
@@ -127,7 +126,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
       });
 
       // Add the attached files to the step data.
-      $data['attachedFiles'] = array_map(function($file) {
+      $stepData['attachedFiles'] = array_map(function($file) {
         return [
           'label' => $file['label'],
           'entityId' => $file['entityId'],
@@ -135,10 +134,14 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
           'isVisible' => $file['isVisible'],
         ];
       }, $stepFiles);
-
-      $reportData[]= $data;
+     
+      $stepsData[]= $stepData;
     }
-
+    $reportData['steps'] = $stepsData;
+    $reportData['reportLabel'] = $decisionSupport->getName();
+    $reportData['processLabel'] = $decisionSupport->getProcessLabel();
+    $reportData['submittedTime'] = $decisionSupport->getupdatedTime();
+    
     $reportJson = json_encode($reportData);
 
     return $reportJson;
