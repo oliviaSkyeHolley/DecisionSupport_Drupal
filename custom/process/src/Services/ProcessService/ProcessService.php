@@ -46,6 +46,7 @@ final class ProcessService implements ProcessServiceInterface {
     $processList = array();
     foreach ($unformattedProcesses as $unformattedProcess) {
       if ($unformattedProcess instanceof Process) {
+        if($unformattedProcess -> getStatus()){
         $process['label'] = $unformattedProcess->getLabel();
         $process['entityId'] = $unformattedProcess->id();
         $process['revisionId'] = $unformattedProcess->getRevisionId();
@@ -59,6 +60,7 @@ final class ProcessService implements ProcessServiceInterface {
         $processList[] = $process;
         unset($process);
       }
+    }
     }
 
     return $processList;
@@ -74,8 +76,11 @@ final class ProcessService implements ProcessServiceInterface {
     if(!$process){
       throw new NotFoundHttpException(sprintf('Process with ID %s was not found.', $processId));
     }
-    $processJsonString = $process->getJsonString();
-
+    if($process -> getStatus()){
+      $processJsonString = $process->getJsonString();
+    }else{
+      $processJsonString = '';
+    }
     return $processJsonString;
   }
 
