@@ -81,8 +81,7 @@ final class DecisionSupportService implements DecisionSupportServiceInterface {
           $decisionSupportReport['entityId'] = $unformattedDecisionSupportReport->id();
           $decisionSupportReport['submittedTime'] = $unformattedDecisionSupportReport->getupdatedTime();
           $decisionSupportReport['processLabel'] = $unformattedDecisionSupportReport->getProcessLabel();
-          $decisionSupportReport['json_string'] = $unformattedDecisionSupportReport->getJsonString();
-
+       
           $decisionSupportReportList[] = $decisionSupportReport;
           unset($decisionSupportReport);
         }
