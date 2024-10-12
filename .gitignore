@@ -9,6 +9,7 @@
 /web/themes/contrib/
 /web/profiles/contrib/
 /web/libraries/
+./composer.lock
 
 # Ignore sensitive information.
 /web/sites/*/settings.php
@@ -33,3 +34,8 @@
 # Ignore the databased Dump Directory
 #
 /web/sites/default/db_dumps
+
+
+# Ignore the conf directory
+#
+./conf
